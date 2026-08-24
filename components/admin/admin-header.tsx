@@ -5,7 +5,7 @@ import { signOut } from "@/app/(admin)/admin/actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { UserRole } from "@/lib/supabase/database.types";
+import type { UserRole } from "@/lib/supabase/types";
 
 function initials(source: string): string {
   const parts = source.trim().split(/\s+/).slice(0, 2);
