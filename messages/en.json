@@ -1,0 +1,94 @@
+{
+  "common": {
+    "brand": "P8 Collects",
+    "loading": "Loading…",
+    "back": "Back",
+    "signOut": "Sign out",
+    "language": "Language",
+    "underConstruction": "Under construction",
+    "underConstructionBody": "This module ships in {phase}. The navigation is already wired so you can walk through it."
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "We'll email you a sign-in link. No password to remember.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@email.com",
+    "sendLink": "Send sign-in link",
+    "sending": "Sending…",
+    "linkSent": "Done. Check {email} and open the link on this same device.",
+    "googleSignIn": "Continue with Google",
+    "or": "or",
+    "invalidEmail": "That email doesn't look valid.",
+    "sendFailed": "Couldn't send the link. Try again in a moment.",
+    "callbackFailed": "That link didn't work or has expired. Request a new one."
+  },
+  "forbidden": {
+    "title": "No access",
+    "body": "Your account isn't allowed into the admin panel. If you think that's a mistake, talk to the owner.",
+    "signedInAs": "Signed in as {email}"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "inventory": "Inventory",
+      "sell": "Sell",
+      "purchases": "Purchases",
+      "more": "More",
+      "accounts": "Accounts",
+      "receivables": "Outstanding",
+      "customers": "Customers",
+      "reports": "Reports",
+      "assistant": "Assistant",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Financial summary",
+      "description": "Sales, margin, cash by currency, and inventory at cost and at market."
+    },
+    "inventory": {
+      "title": "Inventory",
+      "description": "Cards, boxes, and lots, with allocated cost and market value."
+    },
+    "sell": {
+      "title": "Sell",
+      "description": "Fast point of sale and store orders with payment verification."
+    },
+    "purchases": {
+      "title": "Purchases",
+      "description": "Auction lots, shared costs, and allocation by hammer price."
+    },
+    "accounts": {
+      "title": "Accounts",
+      "description": "Balances by account and currency, movements, FX, and reconciliation."
+    },
+    "receivables": {
+      "title": "Outstanding",
+      "description": "Receivables and payables, with days overdue and reminders."
+    },
+    "customers": {
+      "title": "Customers",
+      "description": "Profile, purchase history, wishlist, and segments."
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "Income statement, turnover, aging, and FX differential."
+    },
+    "assistant": {
+      "title": "Assistant",
+      "description": "Natural-language questions about inventory, sales, and finances."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Accounts, channel fees, consignment commission, and store details."
+    }
+  },
+  "store": {
+    "nav": { "shop": "Shop", "about": "About", "policies": "Policies" },
+    "home": {
+      "title": "Collectible cards and sealed boxes",
+      "subtitle": "Graded, raw, and sealed. Sports and TCG.",
+      "comingSoon": "The catalog opens soon."
+    },
+    "footer": { "rights": "All rights reserved." }
+  }
+}

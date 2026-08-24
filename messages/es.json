@@ -1,0 +1,94 @@
+{
+  "common": {
+    "brand": "P8 Collects",
+    "loading": "Cargando…",
+    "back": "Volver",
+    "signOut": "Cerrar sesión",
+    "language": "Idioma",
+    "underConstruction": "En construcción",
+    "underConstructionBody": "Este módulo llega en la {phase}. Por ahora la navegación ya está armada para que puedas recorrerla."
+  },
+  "auth": {
+    "title": "Entrar al panel",
+    "subtitle": "Te enviamos un enlace de acceso a tu correo. No hay contraseña que recordar.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "sendLink": "Enviar enlace de acceso",
+    "sending": "Enviando…",
+    "linkSent": "Listo. Revisa {email} y abre el enlace desde este mismo dispositivo.",
+    "googleSignIn": "Continuar con Google",
+    "or": "o",
+    "invalidEmail": "Ese correo no parece válido.",
+    "sendFailed": "No se pudo enviar el enlace. Intenta de nuevo en un momento.",
+    "callbackFailed": "El enlace no sirvió o ya venció. Pide uno nuevo."
+  },
+  "forbidden": {
+    "title": "Sin acceso",
+    "body": "Tu cuenta no tiene permiso para entrar al panel administrativo. Si crees que es un error, habla con el dueño.",
+    "signedInAs": "Sesión iniciada como {email}"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Resumen",
+      "inventory": "Inventario",
+      "sell": "Vender",
+      "purchases": "Compras",
+      "more": "Más",
+      "accounts": "Cuentas",
+      "receivables": "Pendientes",
+      "customers": "Clientes",
+      "reports": "Reportes",
+      "assistant": "Asistente",
+      "settings": "Configuración"
+    },
+    "dashboard": {
+      "title": "Resumen financiero",
+      "description": "Ventas, margen, caja por moneda e inventario a costo y a mercado."
+    },
+    "inventory": {
+      "title": "Inventario",
+      "description": "Cartas, cajas y lotes, con costo prorrateado y valor de mercado."
+    },
+    "sell": {
+      "title": "Vender",
+      "description": "Punto de venta rápido y órdenes de la tienda con verificación de pago."
+    },
+    "purchases": {
+      "title": "Compras",
+      "description": "Lotes de subasta, costos comunes y prorrateo por hammer price."
+    },
+    "accounts": {
+      "title": "Cuentas",
+      "description": "Saldos por cuenta y moneda, movimientos, cambio de divisas y conciliación."
+    },
+    "receivables": {
+      "title": "Cuentas pendientes",
+      "description": "Por cobrar y por pagar, con días de mora y recordatorios."
+    },
+    "customers": {
+      "title": "Clientes",
+      "description": "Ficha, historial de compras, wishlist y segmentos."
+    },
+    "reports": {
+      "title": "Reportes",
+      "description": "Estado de resultados, rotación, aging y diferencial cambiario."
+    },
+    "assistant": {
+      "title": "Asistente",
+      "description": "Preguntas en lenguaje natural sobre inventario, ventas y finanzas."
+    },
+    "settings": {
+      "title": "Configuración",
+      "description": "Cuentas, fees por canal, comisión de consignación y datos de la tienda."
+    }
+  },
+  "store": {
+    "nav": { "shop": "Tienda", "about": "Nosotros", "policies": "Políticas" },
+    "home": {
+      "title": "Cartas y cajas de colección",
+      "subtitle": "Piezas graduadas, raw y selladas. Deportes y TCG.",
+      "comingSoon": "El catálogo abre pronto."
+    },
+    "footer": { "rights": "Todos los derechos reservados." }
+  }
+}

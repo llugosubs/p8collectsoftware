@@ -1,0 +1,8 @@
+.next
+node_modules
+package-lock.json
+supabase/.temp
+lib/supabase/database.types.ts
+
+# El master prompt se conserva tal como lo escribió el dueño.
+docs/MASTER_PROMPT.md
