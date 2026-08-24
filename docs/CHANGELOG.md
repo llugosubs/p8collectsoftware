@@ -86,7 +86,17 @@ uno en su breakpoint; el sheet de "Más" abre con los seis módulos secundarios 
 Escape; el rol y el correo salen en el header; y al cerrar sesión el panel vuelve a rebotar
 a login. Sin errores de consola ni de servidor.
 
+### Publicado
+
+- Repo en `llugosubs/p8collectsoftware`, autenticado por llave SSH.
+- Producción en **https://p8-collects-os.vercel.app**, región `iad1` — la misma que la base
+  de datos, para no pagar latencia entre continentes en cada consulta.
+- Variables de entorno cargadas en producción, preview y desarrollo. El service role key
+  **no** se subió: todavía ningún código lo usa, y un secreto sin uso en producción es solo
+  superficie de ataque. Entra cuando la Fase 1 lo necesite.
+- La URL de producción quedó registrada en las redirecciones de Supabase Auth.
+
 ### Pendiente para cerrar la fase
 
-- `git push` al repositorio (esta máquina no tiene credenciales de GitHub).
-- Proyecto de Vercel conectado al repo, y añadir su URL a las redirecciones de Auth.
+- **Conectar la cuenta de GitHub a Vercel** desde el dashboard. Sin esa conexión OAuth los
+  push no disparan deploys automáticos ni previews por PR, y hay que desplegar a mano.

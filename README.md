@@ -8,6 +8,7 @@ Venezuela / EE. UU. y contabilidad en dos monedas.
   alcance, el modelo de datos y las reglas de negocio.
 - **Convenciones y decisiones**: [`CLAUDE.md`](CLAUDE.md).
 - **Historial**: [`docs/CHANGELOG.md`](docs/CHANGELOG.md).
+- **Producción**: <https://p8-collects-os.vercel.app>
 
 ## Arrancar en local
 

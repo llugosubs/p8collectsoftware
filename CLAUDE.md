@@ -119,7 +119,14 @@ cambio requiere aprobación explícita del dueño.
   (Next.js + Prisma/SQLite) con 3 cartas de demostración, sin inventario real. No se migra
   nada. Su lección sobre dinero sigue vigente y aquí se cumple por otra vía: Postgres tiene
   `numeric` exacto, así que `numeric(14,4)` + `Decimal.js` es seguro donde SQLite no lo era.
-- **Git, GitHub y Vercel desde la Fase 0**, con preview deploys por PR.
+- **Git, GitHub y Vercel desde la Fase 0.** Repo en `llugosubs/p8collectsoftware`
+  (autenticado por SSH). Producción en **https://p8-collects-os.vercel.app**, región `iad1`,
+  la misma que la base de datos.
+- **`NEXT_PUBLIC_SITE_URL` en preview apunta a producción.** Las URL de preview cambian en
+  cada deploy y no se pueden registrar de antemano en Supabase Auth; permitir
+  `https://*.vercel.app/**` sería demasiado abierto. Un enlace mágico pedido desde un
+  preview aterriza en producción. Hay que resolverlo bien en la Fase 4, cuando la tienda
+  reciba tráfico real.
 
 ---
 
@@ -127,30 +134,27 @@ cambio requiere aprobación explícita del dueño.
 
 Ninguna de estas se resuelve por cuenta propia. Bloquean la fase indicada.
 
-1. **Proyecto de Vercel** (bloquea el deploy). El repo existe
-   (`llugosubs/p8collectsoftware`); falta conectar Vercel y agregar su URL a la lista de
-   redirecciones de Auth.
-2. **Datos reales del lote de Alt de agosto 2026** (bloquea Fase 1). El master prompt
+1. **Datos reales del lote de Alt de agosto 2026** (bloquea Fase 1). El master prompt
    referencia `docs/seed-alt-ago-2026.csv` con ~15 cartas PSA 10; ese archivo no existe.
    Hace falta el Excel o la lista real, con hammer, premium, fee, envío y aduana.
-3. **Cuenta Stripe** (bloquea Fase 4). Stripe requiere una entidad legal; ¿existe la
+2. **Cuenta Stripe** (bloquea Fase 4). Stripe requiere una entidad legal; ¿existe la
    estructura en EE. UU. con cuenta bancaria para recibir? Sin eso, la tienda arranca solo
    con métodos manuales (Zelle, Pago Móvil, Binance) y Stripe queda para después.
-4. **Datos de cobro reales** (bloquea Fase 4). Titular y correo de Zelle, banco y teléfono
+3. **Datos de cobro reales** (bloquea Fase 4). Titular y correo de Zelle, banco y teléfono
    de Pago Móvil, cuenta en Bs., wallet de Binance. Van cifrados en `settings`, no en el
    repositorio.
-5. **Fuente de la tasa BCV** (bloquea Fase 3). El BCV no publica una API estable. Las
+4. **Fuente de la tasa BCV** (bloquea Fase 3). El BCV no publica una API estable. Las
    opciones son scraping del sitio oficial (frágil, se rompe sin aviso), una API pública de
    terceros (depende de un tercero), o carga manual diaria con recordatorio. Recomendación:
    scraping con fallback a manual y notificación cuando falle. Confirmar.
-6. **API de PSA** (bloquea la precarga por cert en Fase 2). La API pública de PSA exige
+5. **API de PSA** (bloquea la precarga por cert en Fase 2). La API pública de PSA exige
    token y tiene límite de consultas. ¿Hay cuenta? Si no, el campo de cert se carga a mano
    y el enriquecimiento automático queda fuera de la Fase 2.
-7. **Alcance de `staff` sobre los costos** (bloquea Fase 1). "`staff` no ve costos" se
+6. **Alcance de `staff` sobre los costos** (bloquea Fase 1). "`staff` no ve costos" se
    implementa ocultando `cost_basis`, `acquisitions` y `transactions` por RLS. Confirmar si
    `staff` tampoco ve el margen de una venta (se deduce del costo) — probablemente sí.
-8. **Dominio de la tienda** (bloquea Fase 4). ¿Qué dominio, y quién lo administra?
-9. **Estado `consumed` en breaks** (bloquea Fase 1). La sección 5.3 dice que la caja pasa
+7. **Dominio de la tienda** (bloquea Fase 4). ¿Qué dominio, y quién lo administra?
+8. **Estado `consumed` en breaks** (bloquea Fase 1). La sección 5.3 dice que la caja pasa
    a `sold` o `consumed`, pero `consumed` no está en el enum de `items.status` de la
    sección 5.1. Recomendación: agregarlo al enum, porque una caja abierta para un break no
    se vendió. Confirmar.
