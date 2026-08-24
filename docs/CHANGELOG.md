@@ -96,7 +96,7 @@ a login. Sin errores de consola ni de servidor.
   superficie de ataque. Entra cuando la Fase 1 lo necesite.
 - La URL de producción quedó registrada en las redirecciones de Supabase Auth.
 
-### Pendiente para cerrar la fase
+Repo conectado a Vercel: cada push a `main` despliega a producción y cada PR levanta su
+preview.
 
-- **Conectar la cuenta de GitHub a Vercel** desde el dashboard. Sin esa conexión OAuth los
-  push no disparan deploys automáticos ni previews por PR, y hay que desplegar a mano.
+**Fase 0 cerrada.**
