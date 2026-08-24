@@ -91,16 +91,16 @@ Nunca commitear un secreto real.
 
 Fases (detalle en la sección 11 del master prompt):
 
-| Fase | Contenido                                                                  | Estado                                                   |
-| ---- | -------------------------------------------------------------------------- | -------------------------------------------------------- |
-| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | código listo, falta la migración con credenciales reales |
-| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | pendiente                                                |
-| 2    | Inventario + Compras + Importador de Excel                                 | pendiente                                                |
-| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                                                |
-| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                                                |
-| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                                                |
-| 6    | Consignación y portal de consignante                                       | pendiente                                                |
-| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente                                                |
+| Fase | Contenido                                                                  | Estado                      |
+| ---- | -------------------------------------------------------------------------- | --------------------------- |
+| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | hecha — falta push y Vercel |
+| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | pendiente                   |
+| 2    | Inventario + Compras + Importador de Excel                                 | pendiente                   |
+| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                   |
+| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                   |
+| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                   |
+| 6    | Consignación y portal de consignante                                       | pendiente                   |
+| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente                   |
 
 ---
 
@@ -127,31 +127,30 @@ cambio requiere aprobación explícita del dueño.
 
 Ninguna de estas se resuelve por cuenta propia. Bloquean la fase indicada.
 
-1. **Credenciales de Supabase** (bloquea el cierre de la Fase 0). Hace falta el proyecto
-   creado y sus tres valores: URL, anon key y service role key.
-2. **Repo de GitHub y proyecto de Vercel** (bloquea el CI de la Fase 0). El dueño ya los
-   tiene; falta el nombre del repo (`usuario/repo`) y el del proyecto en Vercel.
-3. **Datos reales del lote de Alt de agosto 2026** (bloquea Fase 1). El master prompt
+1. **Proyecto de Vercel** (bloquea el deploy). El repo existe
+   (`llugosubs/p8collectsoftware`); falta conectar Vercel y agregar su URL a la lista de
+   redirecciones de Auth.
+2. **Datos reales del lote de Alt de agosto 2026** (bloquea Fase 1). El master prompt
    referencia `docs/seed-alt-ago-2026.csv` con ~15 cartas PSA 10; ese archivo no existe.
    Hace falta el Excel o la lista real, con hammer, premium, fee, envío y aduana.
-4. **Cuenta Stripe** (bloquea Fase 4). Stripe requiere una entidad legal; ¿existe la
+3. **Cuenta Stripe** (bloquea Fase 4). Stripe requiere una entidad legal; ¿existe la
    estructura en EE. UU. con cuenta bancaria para recibir? Sin eso, la tienda arranca solo
    con métodos manuales (Zelle, Pago Móvil, Binance) y Stripe queda para después.
-5. **Datos de cobro reales** (bloquea Fase 4). Titular y correo de Zelle, banco y teléfono
+4. **Datos de cobro reales** (bloquea Fase 4). Titular y correo de Zelle, banco y teléfono
    de Pago Móvil, cuenta en Bs., wallet de Binance. Van cifrados en `settings`, no en el
    repositorio.
-6. **Fuente de la tasa BCV** (bloquea Fase 3). El BCV no publica una API estable. Las
+5. **Fuente de la tasa BCV** (bloquea Fase 3). El BCV no publica una API estable. Las
    opciones son scraping del sitio oficial (frágil, se rompe sin aviso), una API pública de
    terceros (depende de un tercero), o carga manual diaria con recordatorio. Recomendación:
    scraping con fallback a manual y notificación cuando falle. Confirmar.
-7. **API de PSA** (bloquea la precarga por cert en Fase 2). La API pública de PSA exige
+6. **API de PSA** (bloquea la precarga por cert en Fase 2). La API pública de PSA exige
    token y tiene límite de consultas. ¿Hay cuenta? Si no, el campo de cert se carga a mano
    y el enriquecimiento automático queda fuera de la Fase 2.
-8. **Alcance de `staff` sobre los costos** (bloquea Fase 1). "`staff` no ve costos" se
+7. **Alcance de `staff` sobre los costos** (bloquea Fase 1). "`staff` no ve costos" se
    implementa ocultando `cost_basis`, `acquisitions` y `transactions` por RLS. Confirmar si
    `staff` tampoco ve el margen de una venta (se deduce del costo) — probablemente sí.
-9. **Dominio de la tienda** (bloquea Fase 4). ¿Qué dominio, y quién lo administra?
-10. **Estado `consumed` en breaks** (bloquea Fase 1). La sección 5.3 dice que la caja pasa
-    a `sold` o `consumed`, pero `consumed` no está en el enum de `items.status` de la
-    sección 5.1. Recomendación: agregarlo al enum, porque una caja abierta para un break no
-    se vendió. Confirmar.
+8. **Dominio de la tienda** (bloquea Fase 4). ¿Qué dominio, y quién lo administra?
+9. **Estado `consumed` en breaks** (bloquea Fase 1). La sección 5.3 dice que la caja pasa
+   a `sold` o `consumed`, pero `consumed` no está en el enum de `items.status` de la
+   sección 5.1. Recomendación: agregarlo al enum, porque una caja abierta para un break no
+   se vendió. Confirmar.

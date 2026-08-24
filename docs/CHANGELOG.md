@@ -68,9 +68,25 @@ negocio todavía: eso entra en la Fase 1.
 - **7.11 Configuración** no está asignada a ninguna fase en el master prompt. Queda marcada
   para la Fase 3, porque los fees por canal hacen falta al registrar la primera venta.
 
+### Aplicado en el proyecto
+
+- Migración `20260824120000` aplicada en `yxbqyqptzandmwbwennm` (Postgres 17, us-east-1).
+- `lib/supabase/database.types.ts` regenerado desde el esquema real. Los atajos `UserRole`
+  y `Profile` viven en `lib/supabase/types.ts` porque `gen:types` sobrescribe el generado.
+- Auth: Site URL en `http://localhost:5190` y lista de redirecciones permitidas.
+- Registro público **desactivado** tras crear la cuenta de `owner`. La anon key va en el
+  navegador por diseño, así que con el signup abierto cualquiera podía crearse una cuenta
+  y entrar al panel como `viewer`. Los usuarios nuevos se crean por invitación.
+
+### Verificado de punta a punta
+
+Con una sesión real: `/auth/confirm` canjea el token y entra al panel; el trigger asignó
+`owner` al primer usuario; el sidebar aparece en escritorio y el bottom nav en móvil, cada
+uno en su breakpoint; el sheet de "Más" abre con los seis módulos secundarios y cierra con
+Escape; el rol y el correo salen en el header; y al cerrar sesión el panel vuelve a rebotar
+a login. Sin errores de consola ni de servidor.
+
 ### Pendiente para cerrar la fase
 
-- Credenciales del proyecto Supabase, para aplicar la migración y regenerar los tipos.
-- Proyecto de Vercel conectado al repo.
-- Verificar el panel con una sesión real (hoy solo se pudo comprobar que un visitante
-  anónimo termina en el login).
+- `git push` al repositorio (esta máquina no tiene credenciales de GitHub).
+- Proyecto de Vercel conectado al repo, y añadir su URL a las redirecciones de Auth.

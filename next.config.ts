@@ -19,6 +19,9 @@ function supabaseImagePattern() {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // El indicador de desarrollo se planta justo encima del primer botón del
+  // bottom nav y estorba al probar el panel en móvil.
+  devIndicators: false,
   images: {
     remotePatterns: supabaseImagePattern(),
   },
