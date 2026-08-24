@@ -91,16 +91,16 @@ Nunca commitear un secreto real.
 
 Fases (detalle en la sección 11 del master prompt):
 
-| Fase | Contenido                                                                  | Estado    |
-| ---- | -------------------------------------------------------------------------- | --------- |
-| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | pendiente |
-| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | pendiente |
-| 2    | Inventario + Compras + Importador de Excel                                 | pendiente |
-| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente |
-| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente |
-| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente |
-| 6    | Consignación y portal de consignante                                       | pendiente |
-| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente |
+| Fase | Contenido                                                                  | Estado                                                   |
+| ---- | -------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | código listo, falta la migración con credenciales reales |
+| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | pendiente                                                |
+| 2    | Inventario + Compras + Importador de Excel                                 | pendiente                                                |
+| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                                                |
+| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                                                |
+| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                                                |
+| 6    | Consignación y portal de consignante                                       | pendiente                                                |
+| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente                                                |
 
 ---
 
