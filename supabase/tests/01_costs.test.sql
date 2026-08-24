@@ -8,14 +8,16 @@
 begin;
 select plan(10);
 
-\i supabase/tests/00_fixtures.sql
+\ir fixtures/00_fixtures.psql
 
 -- --- owner ------------------------------------------------------------------
 set local role authenticated;
 set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-0000-0000-000000000001","role":"authenticated"}';
 
 select is(
-  (select count(*)::int from public.item_costs),
+  (select count(*)::int from public.item_costs c
+     join public.items i on i.id = c.item_id
+    where i.sku like 'P8-TEST-%'),
   2,
   'owner ve los costos de los items'
 );
@@ -27,13 +29,14 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.acquisitions),
+  (select count(*)::int from public.acquisitions where reference = 'TEST-001'),
   1,
   'owner ve los lotes de compra'
 );
 
 select is(
-  (select count(*)::int from public.transactions),
+  (select count(*)::int from public.transactions
+    where description = 'Compra del lote de prueba'),
   1,
   'owner ve los movimientos de dinero'
 );
@@ -44,7 +47,7 @@ set local "request.jwt.claims" to '{"sub":"aaaaaaaa-0000-0000-0000-000000000002"
 select is(
   (select count(*)::int from public.item_costs),
   0,
-  'staff no ve ni una fila de costos'
+  'staff no ve ni una fila de costos, ni de la prueba ni de ninguna'
 );
 
 select is(
@@ -62,13 +65,13 @@ select is(
 select is(
   (select count(*)::int from public.acquisitions),
   0,
-  'staff no ve los lotes de compra'
+  'staff no ve ningún lote de compra'
 );
 
 select is(
   (select count(*)::int from public.transactions),
   0,
-  'staff no ve los movimientos de dinero'
+  'staff no ve ningún movimiento de dinero'
 );
 
 -- --- viewer -----------------------------------------------------------------
@@ -79,6 +82,8 @@ select is(
   0,
   'viewer tampoco ve costos'
 );
+
+reset role;
 
 select * from finish();
 rollback;

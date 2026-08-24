@@ -78,19 +78,44 @@ convierte a `numeric` sin que un float toque el valor.
 
 ### Verificación
 
-Las migraciones y 21 aserciones de RLS se corrieron contra el proyecto real **dentro de una
-transacción revertida**, así que nada quedó escrito. Ese ensayo encontró los dos errores de
-arriba antes de aplicar nada. El arnés se validó mutando una aserción para confirmar que
-sabe fallar.
+Antes de aplicar nada, las migraciones y 21 aserciones de RLS se corrieron contra el
+proyecto real **dentro de una transacción revertida**. Ese ensayo encontró los dos errores
+de arriba sin dejar rastro.
 
-Contra la API real, con la anon key: pedir `min_price`, `acquisitions` o `item_costs`
-devuelve 42501; pedir `list_price` devuelve 200.
+Con Docker ya instalado, sobre la base local:
+
+- Las 16 migraciones se aplican limpias **desde cero**, no solo acumuladas.
+- **19 tests pgTAP en verde** (`supabase test db`). Se validaron mutando una aserción para
+  confirmar que saben fallar: `have: 0 / want: 2`.
+- **El seed corre**: 15 items, 6761.13 repartidos entre las piezas, 1018.13 de costos
+  comunes prorrateados. El cuadre se comprobó además en SQL puro, al margen del código
+  TypeScript: `total_lote − suma_piezas = 0.0000`.
+- Las tres salvaguardas del seed funcionan: es idempotente, `--reset` rehace el lote, y
+  apuntarlo a producción aborta.
+- Por la API local con la anon key: de 15 items sembrados el anónimo ve los 11 publicados,
+  lee `list_price`, y recibe 42501 al pedir `min_price` o `item_costs`. Lo mismo contra la
+  API de producción.
+
+### Dos hallazgos más, ya corregidos
+
+- **Los privilegios por defecto no son iguales en los dos entornos.** El seed fallaba en
+  local con "permission denied for table fx_rates" usando el service role, y la misma llave
+  funcionaba en el proyecto hospedado. Es el peor tipo de error: solo aparece en un lado.
+  Los permisos ahora se declaran explícitos en una migración, incluidos los `alter default
+privileges` para las tablas que creen las fases siguientes. Ambos entornos reportan hoy
+  exactamente una tabla sin acceso para el service role: `document_counters`, que se excluyó
+  a propósito.
+- **Los tests asumían una base vacía.** Pasaban en limpio y fallaban con el seed cargado,
+  porque contaban filas de toda la tabla en vez de las suyas. Cada aserción quedó acotada a
+  sus propios datos, y ahora pasan en los dos escenarios.
+
+Cosas menores del mismo hallazgo: el archivo de fixtures se llamaba `.sql` y `pg_prove` lo
+tomaba por un test, lo corría fuera de transacción y dejaba usuarios escritos que rompían a
+los siguientes; ahora es `.psql`. Y `supabase/.temp/`, que crea `supabase start` con
+runtime de Deno minificado, entraba al lint.
 
 ### Pendiente
 
-- **Docker Desktop.** Sin él no corren los pgTAP (`supabase test db`) ni el seed, que se
-  niega a tocar nada que no sea una base local. Los tests están escritos en
-  `supabase/tests/`; el seed, en `supabase/seed/`.
 - **El Excel real del lote de Alt de agosto.** El seed carga un lote inventado pero
   realista. Cuando llegue el archivo, se reemplaza `supabase/seed/demo-lot.ts` y nada más.
 

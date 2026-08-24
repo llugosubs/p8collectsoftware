@@ -1,8 +1,13 @@
 -- ============================================================================
 -- Fixtures compartidos por los tests de RLS.
 --
--- No es un archivo de test: lo cargan los demás con \i. Crea un usuario por
--- rol, un consignante con su item, y un lote con una carta publicada y otra no.
+-- No es un archivo de test: lo cargan los demás con \ir, dentro de la
+-- transacción que cada uno abre y revierte. Crea un usuario por rol, un
+-- consignante con su item, y un lote con una carta publicada y otra no.
+--
+-- Lleva extensión .psql a propósito: pg_prove recorre el directorio de tests en
+-- busca de .sql, y si lo encontrara lo correría suelto — fuera de transacción,
+-- dejando los usuarios escritos y rompiendo a los tests siguientes.
 --
 -- Se ejecuta como superusuario, así que salta el RLS a propósito: aquí se
 -- monta el escenario, y los tests lo miran desde cada rol.
