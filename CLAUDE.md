@@ -53,6 +53,16 @@ primer día. La tienda pública además tiene inglés con selector.
 nunca `number` de JavaScript para montos.** Toda cifra se guarda en su moneda original
 más su equivalente en USD y la tasa usada. La moneda base de los reportes es USD.
 
+Los tipos generados declaran los `numeric` como `number`, porque así los entrega PostgREST.
+Esa frontera se cruza **solo** por [`lib/supabase/numeric.ts`](lib/supabase/numeric.ts):
+`dbNumeric()` al escribir, `readNumeric()` al leer. Ningún `insert` manda un `number` para
+un monto.
+
+**Lo sensible va en su propia fila.** El RLS filtra filas, no columnas, así que los costos
+viven en tablas aparte (`item_costs`, `order_line_costs`, `account_details`) con su propia
+política. Una columna de dinero nueva se pregunta primero: ¿quién puede verla? Si no es
+todo el panel, va en la tabla sensible.
+
 **Reglas de negocio.** Viven **solo** en `/lib/domain`, como funciones puras con tests
 unitarios (prorrateo, costo de adquisición, margen, ROI, FX, comisión de consignación,
 reparto de costo en breaks). La UI no calcula: consume el resultado. Un componente que
@@ -91,16 +101,16 @@ Nunca commitear un secreto real.
 
 Fases (detalle en la sección 11 del master prompt):
 
-| Fase | Contenido                                                                  | Estado    |
-| ---- | -------------------------------------------------------------------------- | --------- |
-| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | **hecha** |
-| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | pendiente |
-| 2    | Inventario + Compras + Importador de Excel                                 | pendiente |
-| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente |
-| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente |
-| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente |
-| 6    | Consignación y portal de consignante                                       | pendiente |
-| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente |
+| Fase | Contenido                                                                  | Estado                                                |
+| ---- | -------------------------------------------------------------------------- | ----------------------------------------------------- |
+| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | **hecha**                                             |
+| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | **hecha** — faltan pgTAP y seed, que necesitan Docker |
+| 2    | Inventario + Compras + Importador de Excel                                 | pendiente                                             |
+| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                                             |
+| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                                             |
+| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                                             |
+| 6    | Consignación y portal de consignante                                       | pendiente                                             |
+| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente                                             |
 
 ---
 

@@ -1,0 +1,93 @@
+-- ============================================================================
+-- Fixtures compartidos por los tests de RLS.
+--
+-- No es un archivo de test: lo cargan los demás con \i. Crea un usuario por
+-- rol, un consignante con su item, y un lote con una carta publicada y otra no.
+--
+-- Se ejecuta como superusuario, así que salta el RLS a propósito: aquí se
+-- monta el escenario, y los tests lo miran desde cada rol.
+-- ============================================================================
+
+-- --- Usuarios, uno por rol --------------------------------------------------
+insert into auth.users
+  (id, instance_id, aud, role, email, encrypted_password,
+   email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data)
+values
+  ('aaaaaaaa-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'owner@test.local', 'x',
+   now(), now(), now(), '{"provider":"email"}', '{}'),
+  ('aaaaaaaa-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'staff@test.local', 'x',
+   now(), now(), now(), '{"provider":"email"}', '{}'),
+  ('aaaaaaaa-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'viewer@test.local', 'x',
+   now(), now(), now(), '{"provider":"email"}', '{}'),
+  ('aaaaaaaa-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'consignor@test.local', 'x',
+   now(), now(), now(), '{"provider":"email"}', '{}');
+
+-- El trigger de alta hizo al primero 'owner' y al resto 'viewer'. Se ajusta.
+update public.profiles set role = 'owner'
+  where user_id = 'aaaaaaaa-0000-0000-0000-000000000001';
+update public.profiles set role = 'staff'
+  where user_id = 'aaaaaaaa-0000-0000-0000-000000000002';
+update public.profiles set role = 'viewer'
+  where user_id = 'aaaaaaaa-0000-0000-0000-000000000003';
+update public.profiles set role = 'consignor'
+  where user_id = 'aaaaaaaa-0000-0000-0000-000000000004';
+
+-- --- Consignante ------------------------------------------------------------
+insert into public.consignors (id, user_id, display_name, commission_pct)
+values ('cccccccc-0000-0000-0000-000000000001',
+        'aaaaaaaa-0000-0000-0000-000000000004', 'Consignante de prueba', 15);
+
+insert into public.consignors (id, display_name, commission_pct)
+values ('cccccccc-0000-0000-0000-000000000002', 'Otro consignante', 20);
+
+-- --- Lote de compra ---------------------------------------------------------
+insert into public.acquisitions
+  (id, platform, reference, purchased_at, hammer_total, buyer_premium)
+values ('bbbbbbbb-0000-0000-0000-000000000001', 'alt', 'TEST-001', current_date, 1000, 200);
+
+-- --- Items ------------------------------------------------------------------
+-- Publicado, propio.
+insert into public.items
+  (id, sku, type, category, player_or_character, grading_company, grade,
+   status, acquisition_id, market_value, list_price, min_price, is_published, slug)
+values ('dddddddd-0000-0000-0000-000000000001', 'P8-TEST-0001', 'graded_card', 'sports',
+        'Carta publicada', 'PSA', 10, 'listed',
+        'bbbbbbbb-0000-0000-0000-000000000001', 500, 600, 550, true, 'carta-publicada');
+
+-- Sin publicar, propio.
+insert into public.items
+  (id, sku, type, category, player_or_character, grading_company, grade,
+   status, acquisition_id, market_value, is_published)
+values ('dddddddd-0000-0000-0000-000000000002', 'P8-TEST-0002', 'graded_card', 'sports',
+        'Carta sin publicar', 'PSA', 9, 'in_stock',
+        'bbbbbbbb-0000-0000-0000-000000000001', 300, false);
+
+-- Del consignante de prueba.
+insert into public.items
+  (id, sku, type, category, player_or_character, grading_company,
+   status, owner_type, consignor_id, is_published)
+values ('dddddddd-0000-0000-0000-000000000003', 'P8-TEST-0003', 'raw_card', 'tcg',
+        'Carta consignada', 'none', 'in_stock', 'consignment',
+        'cccccccc-0000-0000-0000-000000000001', false);
+
+-- Del otro consignante: el de prueba no debe verla.
+insert into public.items
+  (id, sku, type, category, player_or_character, grading_company,
+   status, owner_type, consignor_id, is_published)
+values ('dddddddd-0000-0000-0000-000000000004', 'P8-TEST-0004', 'raw_card', 'tcg',
+        'Carta ajena', 'none', 'in_stock', 'consignment',
+        'cccccccc-0000-0000-0000-000000000002', false);
+
+-- --- Costos -----------------------------------------------------------------
+insert into public.item_costs (item_id, allocated_cost) values
+  ('dddddddd-0000-0000-0000-000000000001', 420.5000),
+  ('dddddddd-0000-0000-0000-000000000002', 260.0000);
+
+-- --- Movimiento de dinero ---------------------------------------------------
+insert into public.transactions (account_id, type, amount, currency, amount_usd, description)
+select id, 'purchase', 1200, 'USD', 1200, 'Compra del lote de prueba'
+from public.accounts where name = 'Zelle' limit 1;
