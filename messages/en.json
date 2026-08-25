@@ -262,6 +262,20 @@
         "empty": "No pieces to label.",
         "hint": "Each label carries the SKU and its QR code. Print on sticker sheets and cut along the guides.",
         "openLabels": "QR labels"
+      },
+      "bulk": {
+        "selected": "{count, plural, one {# selected} other {# selected}}",
+        "clear": "Clear selection",
+        "markReceived": "Mark as received",
+        "setLocation": "Change location",
+        "setStatus": "Change status",
+        "unpublish": "Remove from store",
+        "locationPlaceholder": "Caracas, Miami, in transit…",
+        "apply": "Apply",
+        "applying": "Applying…",
+        "done": "{count, plural, one {# piece updated} other {# pieces updated}}",
+        "failed": "Couldn't update.",
+        "publishNote": "Publishing is done piece by piece: each one has to meet its conditions."
       }
     },
     "sell": {

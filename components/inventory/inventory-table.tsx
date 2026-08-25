@@ -20,6 +20,7 @@ import type { InventoryRowView } from "@/lib/inventory/format";
 import type { SortField } from "@/lib/inventory/params";
 import { cn } from "@/lib/utils";
 
+import { BulkActions } from "./bulk-actions";
 import { MoneyText } from "./money-view";
 
 /**
@@ -266,6 +267,15 @@ export function InventoryTable({
           </TableBody>
         </Table>
       </div>
+
+      <BulkActions
+        selected={[...seleccion]}
+        onClear={() => setSeleccion(new Set())}
+        onDone={() => {
+          setSeleccion(new Set());
+          router.refresh();
+        }}
+      />
     </>
   );
 }

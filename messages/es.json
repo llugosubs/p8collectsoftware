@@ -262,6 +262,20 @@
         "empty": "No hay piezas para etiquetar.",
         "hint": "Cada etiqueta lleva el SKU y su código QR. Imprime en hoja adhesiva y recorta por las guías.",
         "openLabels": "Etiquetas con QR"
+      },
+      "bulk": {
+        "selected": "{count, plural, one {# seleccionada} other {# seleccionadas}}",
+        "clear": "Quitar selección",
+        "markReceived": "Marcar como recibidas",
+        "setLocation": "Cambiar ubicación",
+        "setStatus": "Cambiar estado",
+        "unpublish": "Quitar de la tienda",
+        "locationPlaceholder": "Caracas, Miami, en tránsito…",
+        "apply": "Aplicar",
+        "applying": "Aplicando…",
+        "done": "{count, plural, one {# pieza actualizada} other {# piezas actualizadas}}",
+        "failed": "No se pudo actualizar.",
+        "publishNote": "Publicar se hace pieza por pieza: cada una tiene que cumplir sus condiciones."
       }
     },
     "sell": {

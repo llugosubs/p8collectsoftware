@@ -7,6 +7,7 @@ import { splitBreakCost } from "@/lib/domain/breaks";
 import { canPublishItem, type ConsignmentTerms } from "@/lib/domain/inventory";
 import { toDbNumeric } from "@/lib/domain/money";
 import { readNullableNumeric } from "@/lib/supabase/numeric";
+import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -309,4 +310,77 @@ export async function openBreak(input: unknown): Promise<BreakResult> {
     children: result.child_ids.length,
     costAllocated: result.cost_allocated,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Acciones masivas
+// ---------------------------------------------------------------------------
+
+/**
+ * Estados que se pueden poner a mano y en lote.
+ *
+ * `sold` y `consumed` NO están: son consecuencia de un hecho —una venta, un
+ * break— y ponerlos a dedo dejaría inventario que dice vendido sin que exista
+ * la orden que lo explique.
+ */
+const ESTADOS_MANUALES = [
+  "incoming",
+  "in_stock",
+  "listed",
+  "reserved",
+  "returned",
+  "lost",
+] as const;
+
+const bulkInput = z
+  .object({
+    itemIds: z.array(z.uuid()).min(1).max(500),
+    status: z.enum(ESTADOS_MANUALES).optional(),
+    location: z.string().trim().max(60).optional(),
+    markReceived: z.boolean().optional(),
+    unpublish: z.boolean().optional(),
+  })
+  .refine(
+    (v) =>
+      v.status !== undefined ||
+      v.location !== undefined ||
+      v.markReceived === true ||
+      v.unpublish === true,
+    "Hay que pedir al menos un cambio",
+  );
+
+export type BulkResult = { ok: true; updated: number } | { ok: false; reason: string };
+
+export async function bulkUpdateItems(input: unknown): Promise<BulkResult> {
+  const parsed = bulkInput.safeParse(input);
+  if (!parsed.success) return { ok: false, reason: "INVALID_INPUT" };
+
+  const { itemIds, status, location, markReceived, unpublish } = parsed.data;
+  const supabase = await createClient();
+
+  // Tipado contra el Update generado, no `Record<string, unknown>`: así una
+  // columna mal escrita se cae en el typecheck y no en producción.
+  type ItemUpdate = Database["public"]["Tables"]["items"]["Update"];
+  const cambios: ItemUpdate = {};
+  if (status !== undefined) cambios.status = status;
+  if (location !== undefined) cambios.location = location || null;
+  if (unpublish) cambios.is_published = false;
+
+  // Marcar recibido es dos cosas a la vez: la pieza pasa a estar disponible y
+  // queda la fecha, que es lo que después mide cuánto tarda un lote en llegar.
+  if (markReceived) {
+    cambios.status = "in_stock";
+    cambios.received_at = new Date().toISOString();
+  }
+
+  const { data, error } = await supabase
+    .from("items")
+    .update(cambios)
+    .in("id", itemIds)
+    .select("id");
+
+  if (error) return { ok: false, reason: "UPDATE_FAILED" };
+
+  revalidatePath("/admin/inventory");
+  return { ok: true, updated: data?.length ?? 0 };
 }
