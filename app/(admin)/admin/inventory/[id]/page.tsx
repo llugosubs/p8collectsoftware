@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ArrowLeft, Check, Circle, ImageOff } from "lucide-react";
 
+import { BreakDialog } from "@/components/inventory/break-dialog";
+import { PhotoUploader } from "@/components/inventory/photo-uploader";
 import { PublishButton } from "@/components/inventory/publish-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,8 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 
 const ROLES_CON_COSTOS = new Set(["owner", "admin"]);
+/** Mismo conjunto que `is_staff_or_above()` en SQL. `viewer` solo mira. */
+const ROLES_QUE_ESCRIBEN = new Set(["owner", "admin", "staff"]);
 
 export const metadata: Metadata = { title: "Pieza" };
 
@@ -56,6 +59,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
     .eq("user_id", user.id)
     .maybeSingle();
   const canSeeCosts = ROLES_CON_COSTOS.has(profile?.role ?? "");
+  const canEdit = ROLES_QUE_ESCRIBEN.has(profile?.role ?? "");
 
   const { data: item } = await supabase
     .from("items_with_costs")
@@ -173,37 +177,38 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,20rem)_1fr]">
         <div className="space-y-4">
-          <section aria-label={t("photos")}>
-            {images && images.length > 0 ? (
-              <div className="grid grid-cols-2 gap-2">
-                {images.map((image) => (
-                  <div
-                    key={image.id}
-                    className="border-border bg-muted relative aspect-[5/7] overflow-hidden rounded border"
-                  >
-                    <Image
-                      src={image.url}
-                      alt={`${titulo} — ${image.kind}`}
-                      fill
-                      sizes="(min-width: 1024px) 10rem, 45vw"
-                      className="object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
+          <section aria-label={t("photos")} className="space-y-3">
+            {(!images || images.length === 0) && (
               <div className="border-border text-muted-foreground flex aspect-[5/7] flex-col items-center justify-center gap-2 rounded border border-dashed">
                 <ImageOff className="size-8" aria-hidden />
                 <span className="text-sm">{t("noPhotos")}</span>
               </div>
             )}
+            <PhotoUploader
+              itemId={item.id}
+              photos={(images ?? []).map((i) => ({ id: i.id, url: i.url, kind: i.kind }))}
+              canEdit={canEdit}
+            />
           </section>
 
-          <PublishButton
-            itemId={item.id}
-            isPublished={item.is_published ?? false}
-            blockedReason={check.ok ? null : check.reason}
-          />
+          <div className="space-y-3">
+            <PublishButton
+              itemId={item.id}
+              isPublished={item.is_published ?? false}
+              blockedReason={check.ok ? null : check.reason}
+            />
+
+            {/* Solo tiene sentido sobre algo sellado que todavía no se abrió. */}
+            {canEdit &&
+              ["sealed_box", "sealed_pack", "lot"].includes(item.type ?? "") &&
+              item.status !== "consumed" &&
+              item.status !== "sold" && (
+                <BreakDialog
+                  itemId={item.id}
+                  boxCost={item.cost_basis === null ? null : String(item.cost_basis)}
+                />
+              )}
+          </div>
         </div>
 
         <div className="space-y-6">

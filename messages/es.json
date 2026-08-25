@@ -200,6 +200,61 @@
         "publishedOk": "Publicada en la tienda.",
         "unpublishedOk": "Quitada de la tienda.",
         "publishFailed": "No se pudo cambiar la publicación."
+      },
+      "photos": {
+        "add": "Agregar foto",
+        "takePhoto": "Tomar foto",
+        "chooseFile": "Elegir archivo",
+        "uploading": "Subiendo…",
+        "preparing": "Preparando imagen…",
+        "delete": "Quitar foto",
+        "deleteConfirm": "¿Quitar esta foto? Se borra también el archivo.",
+        "uploaded": "Foto agregada.",
+        "deleted": "Foto quitada.",
+        "kind": {
+          "front": "Frente",
+          "back": "Reverso",
+          "cert": "Cert",
+          "detail": "Detalle"
+        },
+        "errors": {
+          "TOO_LARGE": "La imagen pesa demasiado, incluso después de reducirla.",
+          "NOT_AN_IMAGE": "Ese archivo no es una imagen.",
+          "UPLOAD_FAILED": "No se pudo subir la imagen. Intenta de nuevo.",
+          "DELETE_FAILED": "No se pudo borrar el archivo, así que la foto se dejó como estaba.",
+          "FORBIDDEN": "Tu rol no puede cambiar las fotos.",
+          "DECODE_FAILED": "No se pudo leer esa imagen."
+        }
+      },
+      "break": {
+        "open": "Abrir break",
+        "title": "Abrir break",
+        "intro": "La caja pasa a «abierta» y su costo se reparte entre las cartas que salgan. El total no cambia: solo cambia de dueño.",
+        "cardCount": "¿Cuántas cartas salieron?",
+        "platform": "Dónde se rompió",
+        "revenue": "Cobrado por puestos",
+        "revenueHelp": "Ingreso propio del break. No reduce el costo de las cartas.",
+        "weighted": "Repartir por peso",
+        "weightedHelp": "Los hits cargan más costo que el relleno. Sin esto, se reparte en partes iguales.",
+        "cardName": "Carta {n}",
+        "weight": "Peso",
+        "preview": "Reparto",
+        "boxCost": "Costo de la caja",
+        "sum": "Suma de las cartas",
+        "balanced": "Cuadra exacto",
+        "confirm": "Abrir break",
+        "opening": "Abriendo…",
+        "opened": "Break abierto: {count} cartas.",
+        "costPending": "Break abierto. El reparto del costo queda pendiente para el dueño.",
+        "noCost": "Esta caja no tiene costo registrado, así que no hay nada que repartir.",
+        "errors": {
+          "NOT_A_BOX": "Solo se abren cajas, sobres o lotes sellados.",
+          "ALREADY_OPENED": "Esa caja ya se abrió o se vendió.",
+          "MULTIPLE_UNITS": "Esa fila tiene más de una unidad. Sepárala en filas de una antes de abrirla.",
+          "NO_CHILDREN": "Un break sin cartas no se registra.",
+          "UNBALANCED": "El reparto no cuadra con el costo de la caja.",
+          "FAILED": "No se pudo abrir el break."
+        }
       }
     },
     "sell": {

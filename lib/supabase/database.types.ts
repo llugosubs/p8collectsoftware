@@ -304,6 +304,7 @@ export type Database = {
       }
       breaks: {
         Row: {
+          cost_allocated_at: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
@@ -316,6 +317,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cost_allocated_at?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -328,6 +330,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cost_allocated_at?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
@@ -1848,6 +1851,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_staff_or_above: { Args: never; Returns: boolean }
       next_document_number: { Args: { p_prefix: string }; Returns: string }
+      open_break: { Args: { p_payload: Json }; Returns: Json }
     }
     Enums: {
       account_type:

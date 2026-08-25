@@ -10,8 +10,18 @@ function supabaseImagePattern() {
   if (!url) return [];
 
   try {
-    const { hostname } = new URL(url);
-    return [{ protocol: "https" as const, hostname, pathname: "/storage/v1/object/public/**" }];
+    // El protocolo y el puerto salen de la URL real: en desarrollo el Supabase
+    // local vive en http://127.0.0.1:54321, y fijar "https" dejaría el grid sin
+    // fotos justo donde se prueba.
+    const { hostname, protocol, port } = new URL(url);
+    return [
+      {
+        protocol: protocol === "http:" ? ("http" as const) : ("https" as const),
+        hostname,
+        ...(port ? { port } : {}),
+        pathname: "/storage/v1/object/public/**",
+      },
+    ];
   } catch {
     return [];
   }

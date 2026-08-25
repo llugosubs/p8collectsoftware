@@ -200,6 +200,61 @@
         "publishedOk": "Published to the store.",
         "unpublishedOk": "Removed from the store.",
         "publishFailed": "Couldn't change publication."
+      },
+      "photos": {
+        "add": "Add photo",
+        "takePhoto": "Take photo",
+        "chooseFile": "Choose file",
+        "uploading": "Uploading…",
+        "preparing": "Preparing image…",
+        "delete": "Remove photo",
+        "deleteConfirm": "Remove this photo? The file is deleted too.",
+        "uploaded": "Photo added.",
+        "deleted": "Photo removed.",
+        "kind": {
+          "front": "Front",
+          "back": "Back",
+          "cert": "Cert",
+          "detail": "Detail"
+        },
+        "errors": {
+          "TOO_LARGE": "The image is too big, even after resizing.",
+          "NOT_AN_IMAGE": "That file isn't an image.",
+          "UPLOAD_FAILED": "Couldn't upload the image. Try again.",
+          "DELETE_FAILED": "Couldn't delete the file, so the photo was left as it was.",
+          "FORBIDDEN": "Your role can't change photos.",
+          "DECODE_FAILED": "Couldn't read that image."
+        }
+      },
+      "break": {
+        "open": "Open break",
+        "title": "Open break",
+        "intro": "The box becomes «opened» and its cost is split among the cards that came out. The total doesn't change: it only changes hands.",
+        "cardCount": "How many cards came out?",
+        "platform": "Where it was broken",
+        "revenue": "Charged for spots",
+        "revenueHelp": "Break revenue of your own. It doesn't reduce the cards' cost.",
+        "weighted": "Split by weight",
+        "weightedHelp": "Hits carry more cost than filler. Without this, it's an even split.",
+        "cardName": "Card {n}",
+        "weight": "Weight",
+        "preview": "Split",
+        "boxCost": "Box cost",
+        "sum": "Cards total",
+        "balanced": "Balances exactly",
+        "confirm": "Open break",
+        "opening": "Opening…",
+        "opened": "Break opened: {count} cards.",
+        "costPending": "Break opened. The cost split is pending for the owner.",
+        "noCost": "This box has no recorded cost, so there's nothing to split.",
+        "errors": {
+          "NOT_A_BOX": "Only sealed boxes, packs, or lots can be opened.",
+          "ALREADY_OPENED": "That box was already opened or sold.",
+          "MULTIPLE_UNITS": "That row has more than one unit. Split it into rows of one first.",
+          "NO_CHILDREN": "A break with no cards isn't recorded.",
+          "UNBALANCED": "The split doesn't match the box cost.",
+          "FAILED": "Couldn't open the break."
+        }
       }
     },
     "sell": {
