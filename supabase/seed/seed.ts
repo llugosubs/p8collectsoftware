@@ -129,7 +129,11 @@ async function main() {
   };
 
   const allocation = allocateAcquisitionCost(
-    DEMO_CARDS.map((card, index) => ({ id: String(index), hammerPrice: card.hammerPrice })),
+    DEMO_CARDS.map((card, index) => ({
+      id: String(index),
+      lineNumber: index + 1,
+      hammerPrice: card.hammerPrice,
+    })),
     costs,
   );
 
@@ -208,6 +212,7 @@ async function main() {
     const { error: lineError } = await supabase.from("acquisition_lines").insert({
       acquisition_id: acquisition.id,
       item_id: item.id,
+      line_number: index + 1,
       hammer_price: dbNumeric(card.hammerPrice),
     });
     if (lineError) abort(`No se pudo crear la línea ${index}: ${lineError.message}`);

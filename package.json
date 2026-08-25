@@ -16,8 +16,9 @@
     "db:link": "supabase link --project-ref $SUPABASE_PROJECT_REF",
     "db:push": "supabase db push",
     "db:new": "supabase migration new",
-    "gen:types": "supabase gen types typescript --linked > lib/supabase/database.types.ts",
-    "seed": "tsx --env-file-if-exists=.env.local supabase/seed/seed.ts"
+    "gen:types": "supabase gen types typescript --local > lib/supabase/database.types.ts",
+    "seed": "tsx --env-file-if-exists=.env.local supabase/seed/seed.ts",
+    "gen:types:remote": "supabase gen types typescript --linked > lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

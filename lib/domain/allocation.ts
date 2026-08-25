@@ -35,11 +35,22 @@ export type SharedCosts = {
 export type AllocationLine = {
   /** Identificador de la línea. Se devuelve tal cual para poder casarla. */
   id: string;
+  /**
+   * Posición de la línea dentro del lote, empezando en 1. Es obligatorio y la
+   * función ordena por él antes de repartir.
+   *
+   * No es decorativo: el residuo del redondeo cae siempre en la última línea,
+   * así que sin un orden estable, recalcular el mismo lote dos veces movería
+   * centavos entre piezas sin que nadie pueda explicar por qué. Pedirlo aquí
+   * hace imposible pasar una lista que salió de un SELECT sin ORDER BY.
+   */
+  lineNumber: number;
   hammerPrice: MoneyInput;
 };
 
 export type AllocatedLine = {
   id: string;
+  lineNumber: number;
   hammerPrice: Decimal;
   /** Parte de los costos comunes que le tocó. */
   sharedShare: Decimal;
@@ -82,7 +93,23 @@ export function allocateAcquisitionCost(
     throw new AllocationError("Un lote sin líneas no se puede prorratear.");
   }
 
-  const hammerPrices = lines.map((line) => {
+  const numerosVistos = new Set<number>();
+  for (const line of lines) {
+    if (!Number.isInteger(line.lineNumber) || line.lineNumber < 1) {
+      throw new AllocationError(
+        `La línea ${line.id} tiene un número de línea inválido (${line.lineNumber}).`,
+      );
+    }
+    if (numerosVistos.has(line.lineNumber)) {
+      throw new AllocationError(`El número de línea ${line.lineNumber} está repetido en el lote.`);
+    }
+    numerosVistos.add(line.lineNumber);
+  }
+
+  // El orden lo decide `lineNumber`, no cómo venía el arreglo.
+  const ordenadas = [...lines].sort((a, b) => a.lineNumber - b.lineNumber);
+
+  const hammerPrices = ordenadas.map((line) => {
     const value = money(line.hammerPrice);
     if (value.isNegative()) {
       throw new AllocationError(`La línea ${line.id} tiene un martillo negativo.`);
@@ -105,10 +132,10 @@ export function allocateAcquisitionCost(
   const allocated: AllocatedLine[] = [];
   let running = ZERO;
 
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index]!;
+  for (let index = 0; index < ordenadas.length; index += 1) {
+    const line = ordenadas[index]!;
     const hammerPrice = hammerPrices[index]!;
-    const isLast = index === lines.length - 1;
+    const isLast = index === ordenadas.length - 1;
 
     let allocatedCost: Decimal;
 
@@ -118,7 +145,7 @@ export function allocateAcquisitionCost(
       allocatedCost = grandTotal.minus(running);
     } else {
       const share = splitEvenly
-        ? sharedTotal.dividedBy(lines.length)
+        ? sharedTotal.dividedBy(ordenadas.length)
         : hammerPrice.dividedBy(hammerTotal).times(sharedTotal);
       allocatedCost = toDbScale(hammerPrice.plus(share));
       running = running.plus(allocatedCost);
@@ -133,6 +160,7 @@ export function allocateAcquisitionCost(
 
     allocated.push({
       id: line.id,
+      lineNumber: line.lineNumber,
       hammerPrice,
       sharedShare: allocatedCost.minus(hammerPrice),
       allocatedCost,

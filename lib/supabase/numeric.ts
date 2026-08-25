@@ -1,6 +1,11 @@
 import type Decimal from "decimal.js";
 
-import { fromDbNumeric, toDbNumeric, type MoneyInput } from "@/lib/domain/money";
+import {
+  fromDbNumeric,
+  fromDbNumericOrNull,
+  toDbNumeric,
+  type MoneyInput,
+} from "@/lib/domain/money";
 
 /**
  * El puente entre `numeric` de Postgres y JavaScript.
@@ -21,7 +26,20 @@ export function dbNumeric(value: MoneyInput): number {
   return toDbNumeric(value) as unknown as number;
 }
 
-/** Lectura de un `numeric` que llega desde la API. Nada de aritmética antes. */
-export function readNumeric(value: number | string | null | undefined): Decimal {
+/** Lectura de un `numeric` obligatorio. Nada de aritmética antes de convertirlo. */
+export function readNumeric(value: number | string): Decimal {
   return fromDbNumeric(value);
+}
+
+/**
+ * Lectura de un `numeric` que puede llegar nulo — y en este esquema son
+ * muchos, porque el RLS esconde los costos devolviendo NULL en las vistas.
+ *
+ * Toda columna de `item_costs`, `order_line_costs` o `account_details` leída
+ * desde el panel pasa por aquí. Si se usara `readNumeric` con un `?? 0`, la
+ * pantalla de un `staff` mostraría costo cero y margen completo en vez de
+ * "sin acceso", y nada en el sistema avisaría del error.
+ */
+export function readNullableNumeric(value: number | string | null | undefined): Decimal | null {
+  return fromDbNumericOrNull(value);
 }

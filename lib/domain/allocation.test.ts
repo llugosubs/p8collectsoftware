@@ -17,7 +17,7 @@ const SIN_COSTOS: SharedCosts = {
   otherCosts: 0,
 };
 
-function costos(partial: Partial<SharedCosts>): SharedCosts {
+function costos_(partial: Partial<SharedCosts>): SharedCosts {
   return { ...SIN_COSTOS, ...partial };
 }
 
@@ -29,7 +29,7 @@ function sumaDeLineas(lines: readonly { allocatedCost: { toString(): string } }[
 describe("sharedCostsTotal", () => {
   it("suma los seis componentes del lote", () => {
     const total = sharedCostsTotal(
-      costos({ buyerPremium: "100", cardFee: "16.5", shippingIntl: "35", customsVe: "48.25" }),
+      costos_({ buyerPremium: "100", cardFee: "16.5", shippingIntl: "35", customsVe: "48.25" }),
     );
     expect(total.toFixed(2)).toBe("199.75");
   });
@@ -39,10 +39,10 @@ describe("prorrateo", () => {
   it("reparte en proporción al martillo", () => {
     const { lines } = allocateAcquisitionCost(
       [
-        { id: "a", hammerPrice: "600" },
-        { id: "b", hammerPrice: "400" },
+        { id: "a", lineNumber: 1, hammerPrice: "600" },
+        { id: "b", lineNumber: 2, hammerPrice: "400" },
       ],
-      costos({ buyerPremium: "100" }),
+      costos_({ buyerPremium: "100" }),
     );
 
     // 60% y 40% de los 100 de comisión.
@@ -54,11 +54,11 @@ describe("prorrateo", () => {
     // 100 repartido entre tres partes iguales: 33.3333… cada una.
     const resultado = allocateAcquisitionCost(
       [
-        { id: "a", hammerPrice: "100" },
-        { id: "b", hammerPrice: "100" },
-        { id: "c", hammerPrice: "100" },
+        { id: "a", lineNumber: 1, hammerPrice: "100" },
+        { id: "b", lineNumber: 2, hammerPrice: "100" },
+        { id: "c", lineNumber: 3, hammerPrice: "100" },
       ],
-      costos({ buyerPremium: "100" }),
+      costos_({ buyerPremium: "100" }),
     );
 
     expect(sumaDeLineas(resultado.lines).toString()).toBe(resultado.grandTotal.toString());
@@ -72,13 +72,13 @@ describe("prorrateo", () => {
   it("mantiene el invariante con montos de subasta reales", () => {
     const resultado = allocateAcquisitionCost(
       [
-        { id: "1", hammerPrice: "383.00" },
-        { id: "2", hammerPrice: "212.50" },
-        { id: "3", hammerPrice: "640.00" },
-        { id: "4", hammerPrice: "97.77" },
-        { id: "5", hammerPrice: "1450.33" },
+        { id: "1", lineNumber: 1, hammerPrice: "383.00" },
+        { id: "2", lineNumber: 2, hammerPrice: "212.50" },
+        { id: "3", lineNumber: 3, hammerPrice: "640.00" },
+        { id: "4", lineNumber: 4, hammerPrice: "97.77" },
+        { id: "5", lineNumber: 5, hammerPrice: "1450.33" },
       ],
-      costos({
+      costos_({
         buyerPremium: "556.32",
         cardFee: "111.26",
         shippingIntl: "85.00",
@@ -95,8 +95,8 @@ describe("prorrateo", () => {
 
   it("le da todo el lote a una sola línea", () => {
     const { lines, grandTotal } = allocateAcquisitionCost(
-      [{ id: "unica", hammerPrice: "383" }],
-      costos({ buyerPremium: "76.6", cardFee: "15.17" }),
+      [{ id: "unica", lineNumber: 1, hammerPrice: "383" }],
+      costos_({ buyerPremium: "76.6", cardFee: "15.17" }),
     );
 
     expect(lines).toHaveLength(1);
@@ -107,8 +107,8 @@ describe("prorrateo", () => {
   it("sin costos comunes, cada línea cuesta su martillo", () => {
     const { lines } = allocateAcquisitionCost(
       [
-        { id: "a", hammerPrice: "120.55" },
-        { id: "b", hammerPrice: "80.45" },
+        { id: "a", lineNumber: 1, hammerPrice: "120.55" },
+        { id: "b", lineNumber: 2, hammerPrice: "80.45" },
       ],
       SIN_COSTOS,
     );
@@ -122,11 +122,11 @@ describe("prorrateo", () => {
     // Un lote regalado que igual costó el envío.
     const resultado = allocateAcquisitionCost(
       [
-        { id: "a", hammerPrice: "0" },
-        { id: "b", hammerPrice: "0" },
-        { id: "c", hammerPrice: "0" },
+        { id: "a", lineNumber: 1, hammerPrice: "0" },
+        { id: "b", lineNumber: 2, hammerPrice: "0" },
+        { id: "c", lineNumber: 3, hammerPrice: "0" },
       ],
-      costos({ shippingIntl: "90" }),
+      costos_({ shippingIntl: "90" }),
     );
 
     expect(resultado.lines[0]!.allocatedCost.toFixed(2)).toBe("30.00");
@@ -136,10 +136,10 @@ describe("prorrateo", () => {
   it("devuelve la parte común de cada línea por separado", () => {
     const { lines } = allocateAcquisitionCost(
       [
-        { id: "a", hammerPrice: "750" },
-        { id: "b", hammerPrice: "250" },
+        { id: "a", lineNumber: 1, hammerPrice: "750" },
+        { id: "b", lineNumber: 2, hammerPrice: "250" },
       ],
-      costos({ buyerPremium: "200" }),
+      costos_({ buyerPremium: "200" }),
     );
 
     expect(lines[0]!.sharedShare.toFixed(2)).toBe("150.00");
@@ -153,14 +153,60 @@ describe("entradas inválidas", () => {
   });
 
   it("rechaza un martillo negativo", () => {
-    expect(() => allocateAcquisitionCost([{ id: "a", hammerPrice: "-10" }], SIN_COSTOS)).toThrow(
-      AllocationError,
-    );
+    expect(() =>
+      allocateAcquisitionCost([{ id: "a", lineNumber: 1, hammerPrice: "-10" }], SIN_COSTOS),
+    ).toThrow(AllocationError);
   });
 
   it("rechaza costos comunes negativos", () => {
     expect(() =>
-      allocateAcquisitionCost([{ id: "a", hammerPrice: "10" }], costos({ customsVe: "-5" })),
+      allocateAcquisitionCost(
+        [{ id: "a", lineNumber: 1, hammerPrice: "10" }],
+        costos_({ customsVe: "-5" }),
+      ),
+    ).toThrow(AllocationError);
+  });
+});
+
+describe("orden de las líneas", () => {
+  it("reparte igual sin importar en qué orden venga el arreglo", () => {
+    const costos = costos_({ buyerPremium: "100" });
+    const enOrden = allocateAcquisitionCost(
+      [
+        { id: "a", lineNumber: 1, hammerPrice: "600" },
+        { id: "b", lineNumber: 2, hammerPrice: "400" },
+      ],
+      costos,
+    );
+    const alReves = allocateAcquisitionCost(
+      [
+        { id: "b", lineNumber: 2, hammerPrice: "400" },
+        { id: "a", lineNumber: 1, hammerPrice: "600" },
+      ],
+      costos,
+    );
+
+    // El residuo del redondeo tiene que caer en la misma pieza las dos veces.
+    expect(alReves.lines.map((l) => [l.id, l.allocatedCost.toString()])).toEqual(
+      enOrden.lines.map((l) => [l.id, l.allocatedCost.toString()]),
+    );
+  });
+
+  it("rechaza un número de línea repetido", () => {
+    expect(() =>
+      allocateAcquisitionCost(
+        [
+          { id: "a", lineNumber: 1, hammerPrice: "10" },
+          { id: "b", lineNumber: 1, hammerPrice: "10" },
+        ],
+        costos_({}),
+      ),
+    ).toThrow(AllocationError);
+  });
+
+  it("rechaza un número de línea que no es un entero positivo", () => {
+    expect(() =>
+      allocateAcquisitionCost([{ id: "a", lineNumber: 0, hammerPrice: "10" }], costos_({})),
     ).toThrow(AllocationError);
   });
 });

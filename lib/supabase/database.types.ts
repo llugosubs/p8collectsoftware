@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -124,6 +119,7 @@ export type Database = {
           hammer_price: number
           id: string
           item_id: string
+          line_number: number
           notes: string | null
           updated_at: string
         }
@@ -134,6 +130,7 @@ export type Database = {
           hammer_price: number
           id?: string
           item_id: string
+          line_number: number
           notes?: string | null
           updated_at?: string
         }
@@ -144,6 +141,7 @@ export type Database = {
           hammer_price?: number
           id?: string
           item_id?: string
+          line_number?: number
           notes?: string | null
           updated_at?: string
         }
@@ -166,6 +164,13 @@ export type Database = {
             foreignKeyName: "acquisition_lines_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "acquisition_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
             referencedRelation: "items_with_costs"
             referencedColumns: ["id"]
           },
@@ -176,16 +181,21 @@ export type Database = {
           buyer_premium: number
           card_fee: number
           courier_ve: number
+          courier_ve_ves: number | null
           created_at: string
           created_by: string | null
           currency: string
           customs_ve: number
+          customs_ve_ves: number | null
           deleted_at: string | null
           due_at: string | null
           fx_rate: number | null
           fx_rate_source: Database["public"]["Enums"]["fx_source"] | null
           hammer_total: number
           id: string
+          idempotency_key: string | null
+          local_fx_rate: number | null
+          local_fx_rate_source: Database["public"]["Enums"]["fx_source"] | null
           notes: string | null
           other_costs: number
           payment_status: Database["public"]["Enums"]["acquisition_payment_status"]
@@ -201,16 +211,21 @@ export type Database = {
           buyer_premium?: number
           card_fee?: number
           courier_ve?: number
+          courier_ve_ves?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string
           customs_ve?: number
+          customs_ve_ves?: number | null
           deleted_at?: string | null
           due_at?: string | null
           fx_rate?: number | null
           fx_rate_source?: Database["public"]["Enums"]["fx_source"] | null
           hammer_total?: number
           id?: string
+          idempotency_key?: string | null
+          local_fx_rate?: number | null
+          local_fx_rate_source?: Database["public"]["Enums"]["fx_source"] | null
           notes?: string | null
           other_costs?: number
           payment_status?: Database["public"]["Enums"]["acquisition_payment_status"]
@@ -226,16 +241,21 @@ export type Database = {
           buyer_premium?: number
           card_fee?: number
           courier_ve?: number
+          courier_ve_ves?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string
           customs_ve?: number
+          customs_ve_ves?: number | null
           deleted_at?: string | null
           due_at?: string | null
           fx_rate?: number | null
           fx_rate_source?: Database["public"]["Enums"]["fx_source"] | null
           hammer_total?: number
           id?: string
+          idempotency_key?: string | null
+          local_fx_rate?: number | null
+          local_fx_rate_source?: Database["public"]["Enums"]["fx_source"] | null
           notes?: string | null
           other_costs?: number
           payment_status?: Database["public"]["Enums"]["acquisition_payment_status"]
@@ -331,6 +351,13 @@ export type Database = {
             foreignKeyName: "breaks_source_item_id_fkey"
             columns: ["source_item_id"]
             isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "breaks_source_item_id_fkey"
+            columns: ["source_item_id"]
+            isOneToOne: false
             referencedRelation: "items_with_costs"
             referencedColumns: ["id"]
           },
@@ -395,6 +422,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consignment_agreements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
             referencedColumns: ["id"]
           },
           {
@@ -727,6 +761,13 @@ export type Database = {
             foreignKeyName: "item_costs_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: true
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_costs_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: true
             referencedRelation: "items_with_costs"
             referencedColumns: ["id"]
           },
@@ -769,6 +810,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_images_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
             referencedColumns: ["id"]
           },
           {
@@ -826,6 +874,13 @@ export type Database = {
             foreignKeyName: "item_valuations_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_valuations_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
             referencedRelation: "items_with_costs"
             referencedColumns: ["id"]
           },
@@ -854,6 +909,7 @@ export type Database = {
           is_rookie: boolean
           language: string | null
           list_price: number | null
+          listed_at: string | null
           location: string | null
           market_value: number | null
           market_value_at: string | null
@@ -864,11 +920,13 @@ export type Database = {
           player_or_character: string | null
           quantity: number
           raw_condition: Database["public"]["Enums"]["raw_condition"] | null
+          received_at: string | null
           search_vector: unknown
           serial_numbered: string | null
           set_name: string | null
           sku: string
           slug: string | null
+          sold_at: string | null
           sport_or_game: string | null
           status: Database["public"]["Enums"]["item_status"]
           tags: string[]
@@ -899,6 +957,7 @@ export type Database = {
           is_rookie?: boolean
           language?: string | null
           list_price?: number | null
+          listed_at?: string | null
           location?: string | null
           market_value?: number | null
           market_value_at?: string | null
@@ -909,11 +968,13 @@ export type Database = {
           player_or_character?: string | null
           quantity?: number
           raw_condition?: Database["public"]["Enums"]["raw_condition"] | null
+          received_at?: string | null
           search_vector?: unknown
           serial_numbered?: string | null
           set_name?: string | null
           sku?: string
           slug?: string | null
+          sold_at?: string | null
           sport_or_game?: string | null
           status?: Database["public"]["Enums"]["item_status"]
           tags?: string[]
@@ -944,6 +1005,7 @@ export type Database = {
           is_rookie?: boolean
           language?: string | null
           list_price?: number | null
+          listed_at?: string | null
           location?: string | null
           market_value?: number | null
           market_value_at?: string | null
@@ -954,11 +1016,13 @@ export type Database = {
           player_or_character?: string | null
           quantity?: number
           raw_condition?: Database["public"]["Enums"]["raw_condition"] | null
+          received_at?: string | null
           search_vector?: unknown
           serial_numbered?: string | null
           set_name?: string | null
           sku?: string
           slug?: string | null
+          sold_at?: string | null
           sport_or_game?: string | null
           status?: Database["public"]["Enums"]["item_status"]
           tags?: string[]
@@ -987,6 +1051,13 @@ export type Database = {
             columns: ["parent_item_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
             referencedColumns: ["id"]
           },
           {
@@ -1122,6 +1193,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
             referencedColumns: ["id"]
           },
           {
@@ -1483,6 +1561,94 @@ export type Database = {
       }
     }
     Views: {
+      items_deleted: {
+        Row: {
+          acquisition_id: string | null
+          brand: string | null
+          card_number: string | null
+          category: Database["public"]["Enums"]["item_category"] | null
+          cert_number: string | null
+          consignor_id: string | null
+          cost_basis: number | null
+          created_at: string | null
+          created_by: string | null
+          deleted_at: string | null
+          description_en: string | null
+          description_es: string | null
+          grade: number | null
+          grade_label: string | null
+          grading_company: Database["public"]["Enums"]["grading_company"] | null
+          id: string | null
+          is_autograph: boolean | null
+          is_patch: boolean | null
+          is_published: boolean | null
+          is_rookie: boolean | null
+          language: string | null
+          list_price: number | null
+          listed_at: string | null
+          location: string | null
+          market_value: number | null
+          market_value_at: string | null
+          market_value_source: string | null
+          min_price: number | null
+          owner_type: Database["public"]["Enums"]["owner_type"] | null
+          parent_item_id: string | null
+          player_or_character: string | null
+          quantity: number | null
+          raw_condition: Database["public"]["Enums"]["raw_condition"] | null
+          received_at: string | null
+          search_vector: unknown
+          serial_numbered: string | null
+          set_name: string | null
+          sku: string | null
+          slug: string | null
+          sold_at: string | null
+          sport_or_game: string | null
+          status: Database["public"]["Enums"]["item_status"] | null
+          tags: string[] | null
+          type: Database["public"]["Enums"]["item_type"] | null
+          updated_at: string | null
+          variant: string | null
+          year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "items_acquisition_id_fkey"
+            columns: ["acquisition_id"]
+            isOneToOne: false
+            referencedRelation: "acquisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_consignor_id_fkey"
+            columns: ["consignor_id"]
+            isOneToOne: false
+            referencedRelation: "consignors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_costs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       items_with_costs: {
         Row: {
           acquisition_id: string | null
@@ -1509,6 +1675,7 @@ export type Database = {
           is_rookie: boolean | null
           language: string | null
           list_price: number | null
+          listed_at: string | null
           location: string | null
           market_value: number | null
           market_value_at: string | null
@@ -1520,11 +1687,13 @@ export type Database = {
           player_or_character: string | null
           quantity: number | null
           raw_condition: Database["public"]["Enums"]["raw_condition"] | null
+          received_at: string | null
           search_vector: unknown
           serial_numbered: string | null
           set_name: string | null
           sku: string | null
           slug: string | null
+          sold_at: string | null
           sport_or_game: string | null
           status: Database["public"]["Enums"]["item_status"] | null
           tags: string[] | null
@@ -1560,6 +1729,13 @@ export type Database = {
             foreignKeyName: "items_parent_item_id_fkey"
             columns: ["parent_item_id"]
             isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
             referencedRelation: "items_with_costs"
             referencedColumns: ["id"]
           },
@@ -1585,6 +1761,13 @@ export type Database = {
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_lines_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
             referencedColumns: ["id"]
           },
           {
@@ -2009,3 +2192,4 @@ export const Constants = {
     },
   },
 } as const
+

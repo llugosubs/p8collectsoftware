@@ -5,6 +5,7 @@ import {
   InvalidMoneyError,
   formatMoney,
   fromDbNumeric,
+  fromDbNumericOrNull,
   money,
   percentOf,
   sum,
@@ -48,10 +49,30 @@ describe("redondeo", () => {
     expect(toDbNumeric("12.34567")).toBe("12.3457");
   });
 
-  it("lee un numeric vacío o nulo como cero", () => {
-    expect(fromDbNumeric(null).toString()).toBe("0");
-    expect(fromDbNumeric("").toString()).toBe("0");
+  it("lee un numeric normal", () => {
     expect(fromDbNumeric("47.7600").toString()).toBe("47.76");
+    expect(fromDbNumeric(47.76).toString()).toBe("47.76");
+  });
+
+  it("NO convierte un NULL en cero", () => {
+    // Es el defecto que este proyecto ya cometió una vez. Un costo que el RLS
+    // esconde llegaba como 0.00, y con él una ganancia no realizada igual al
+    // valor de mercado completo: una cifra falsa que nada delataba.
+    expect(fromDbNumericOrNull(null)).toBeNull();
+    expect(fromDbNumericOrNull(undefined)).toBeNull();
+    expect(fromDbNumericOrNull("")).toBeNull();
+  });
+
+  it("lee un numeric presente aunque venga por la vía que admite nulos", () => {
+    expect(fromDbNumericOrNull("47.7600")?.toString()).toBe("47.76");
+    expect(fromDbNumericOrNull("0")?.toString()).toBe("0");
+  });
+
+  it("distingue un cero real de un dato ausente", () => {
+    // Un costo de cero es una afirmación: la pieza no costó nada.
+    // Un costo ausente es otra cosa: no se sabe, o no se puede ver.
+    expect(fromDbNumericOrNull("0")).not.toBeNull();
+    expect(fromDbNumericOrNull(null)).toBeNull();
   });
 });
 

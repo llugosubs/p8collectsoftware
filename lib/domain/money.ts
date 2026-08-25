@@ -73,9 +73,24 @@ export function toDbNumeric(value: MoneyInput): string {
   return toDbScale(value).toFixed(DB_SCALE);
 }
 
-/** Lectura de un `numeric` que Postgres devuelve como string. */
-export function fromDbNumeric(value: string | number | null | undefined): Decimal {
-  if (value === null || value === undefined || value === "") return ZERO;
+/**
+ * Lectura de un `numeric` que llega desde la base.
+ *
+ * No acepta `null` a propósito. Un NULL no es cero: puede significar que el
+ * dato no existe (una carta sin precio de mercado no vale cero) o que el RLS
+ * lo escondió (un `staff` no ve el costo). Convertir cualquiera de las dos
+ * cosas en 0 produce una cifra falsa que nada delata — un costo de $0.00 y una
+ * ganancia no realizada igual al valor de mercado completo.
+ *
+ * Para columnas que pueden venir nulas, `fromDbNumericOrNull`.
+ */
+export function fromDbNumeric(value: string | number): Decimal {
+  return money(value);
+}
+
+/** Lectura de un `numeric` que puede no estar. Devuelve null, nunca cero. */
+export function fromDbNumericOrNull(value: string | number | null | undefined): Decimal | null {
+  if (value === null || value === undefined || value === "") return null;
   return money(value);
 }
 
