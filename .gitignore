@@ -52,3 +52,6 @@ next-env.d.ts
 
 # sentry
 .sentryclirc
+
+# copia local de credenciales al cambiar de entorno
+.env.local.prod-backup

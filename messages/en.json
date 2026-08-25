@@ -47,7 +47,95 @@
     },
     "inventory": {
       "title": "Inventory",
-      "description": "Cards, boxes, and lots, with allocated cost and market value."
+      "description": "Cards, boxes, and lots, with allocated cost and market value.",
+      "search": "Search card, player, set, cert…",
+      "empty": "No pieces match that filter.",
+      "emptyAll": "No inventory yet. Start by registering a purchase.",
+      "clearFilters": "Clear filters",
+      "filters": "Filters",
+      "results": "{count, plural, =0 {no results} one {# piece} other {# pieces}}",
+      "viewList": "List",
+      "viewGrid": "Photos",
+      "page": "Page {page} of {pages}",
+      "previous": "Previous",
+      "next": "Next",
+      "export": "Export CSV",
+      "noPhoto": "No photo",
+      "noComp": "No comp",
+      "noAccess": "No access",
+      "columns": {
+        "sku": "SKU",
+        "item": "Piece",
+        "grade": "Grade",
+        "status": "Status",
+        "location": "Location",
+        "cost": "Cost",
+        "market": "Market",
+        "list": "Price",
+        "gain": "Unrealized",
+        "quantity": "Qty"
+      },
+      "filter": {
+        "type": "Type",
+        "category": "Category",
+        "grading": "Grader",
+        "status": "Status",
+        "owner": "Owner",
+        "game": "Sport or game",
+        "location": "Location",
+        "grade": "Grade",
+        "value": "Value",
+        "published": "In store",
+        "min": "Min",
+        "max": "Max",
+        "publishedYes": "Published",
+        "publishedNo": "Not published",
+        "valueMarket": "Market value",
+        "valueList": "List price",
+        "valueCost": "Cost"
+      },
+      "totals": {
+        "title": "Inventory value",
+        "atCost": "At cost",
+        "atMarket": "At market",
+        "unrealized": "Unrealized gain",
+        "available": "Available",
+        "incoming": "In transit",
+        "consigned": "Third-party consignment",
+        "consumed": "Opened boxes",
+        "hiddenCosts": "{count, plural, one {# piece with no visible cost} other {# pieces with no visible cost}}",
+        "consignedNote": "It's in the vault but belongs to others: it doesn't add to your equity.",
+        "consumedNote": "Its cost already moved to the cards that came out. Not counted twice.",
+        "notComputable": "Can't be computed without every cost."
+      },
+      "type": {
+        "graded_card": "Graded",
+        "raw_card": "Raw",
+        "sealed_box": "Sealed box",
+        "sealed_pack": "Sealed pack",
+        "lot": "Lot",
+        "supply": "Supply"
+      },
+      "category": {
+        "sports": "Sports",
+        "tcg": "TCG",
+        "other": "Other"
+      },
+      "status": {
+        "incoming": "In transit",
+        "in_stock": "In stock",
+        "listed": "Listed",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "consigned_out": "Out on consignment",
+        "returned": "Returned",
+        "lost": "Lost",
+        "consumed": "Opened in break"
+      },
+      "owner": {
+        "own": "Own",
+        "consignment": "Consigned"
+      }
     },
     "sell": {
       "title": "Sell",
@@ -83,12 +171,18 @@
     }
   },
   "store": {
-    "nav": { "shop": "Shop", "about": "About", "policies": "Policies" },
+    "nav": {
+      "shop": "Shop",
+      "about": "About",
+      "policies": "Policies"
+    },
     "home": {
       "title": "Collectible cards and sealed boxes",
       "subtitle": "Graded, raw, and sealed. Sports and TCG.",
       "comingSoon": "The catalog opens soon."
     },
-    "footer": { "rights": "All rights reserved." }
+    "footer": {
+      "rights": "All rights reserved."
+    }
   }
 }

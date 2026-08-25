@@ -47,7 +47,95 @@
     },
     "inventory": {
       "title": "Inventario",
-      "description": "Cartas, cajas y lotes, con costo prorrateado y valor de mercado."
+      "description": "Cartas, cajas y lotes, con costo prorrateado y valor de mercado.",
+      "search": "Buscar carta, jugador, set, cert…",
+      "empty": "No hay piezas que cumplan ese filtro.",
+      "emptyAll": "Todavía no hay inventario. Empieza registrando una compra.",
+      "clearFilters": "Limpiar filtros",
+      "filters": "Filtros",
+      "results": "{count, plural, =0 {sin resultados} one {# pieza} other {# piezas}}",
+      "viewList": "Lista",
+      "viewGrid": "Fotos",
+      "page": "Página {page} de {pages}",
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "export": "Exportar CSV",
+      "noPhoto": "Sin foto",
+      "noComp": "Sin comp",
+      "noAccess": "Sin acceso",
+      "columns": {
+        "sku": "SKU",
+        "item": "Pieza",
+        "grade": "Grado",
+        "status": "Estado",
+        "location": "Ubicación",
+        "cost": "Costo",
+        "market": "Mercado",
+        "list": "Precio",
+        "gain": "No realizada",
+        "quantity": "Cant."
+      },
+      "filter": {
+        "type": "Tipo",
+        "category": "Categoría",
+        "grading": "Gradadora",
+        "status": "Estado",
+        "owner": "Dueño",
+        "game": "Deporte o juego",
+        "location": "Ubicación",
+        "grade": "Grado",
+        "value": "Valor",
+        "published": "En tienda",
+        "min": "Mínimo",
+        "max": "Máximo",
+        "publishedYes": "Publicadas",
+        "publishedNo": "Sin publicar",
+        "valueMarket": "Valor de mercado",
+        "valueList": "Precio de lista",
+        "valueCost": "Costo"
+      },
+      "totals": {
+        "title": "Valor del inventario",
+        "atCost": "A costo",
+        "atMarket": "A mercado",
+        "unrealized": "Ganancia no realizada",
+        "available": "Disponible",
+        "incoming": "En tránsito",
+        "consigned": "Consignado de terceros",
+        "consumed": "Cajas abiertas",
+        "hiddenCosts": "{count, plural, one {# pieza sin costo visible} other {# piezas sin costo visible}}",
+        "consignedNote": "Está en la bóveda pero es de terceros: no suma a tu patrimonio.",
+        "consumedNote": "Su costo ya pasó a las cartas que salieron. No se suma aparte.",
+        "notComputable": "No se puede calcular sin todos los costos."
+      },
+      "type": {
+        "graded_card": "Graduada",
+        "raw_card": "Raw",
+        "sealed_box": "Caja sellada",
+        "sealed_pack": "Sobre sellado",
+        "lot": "Lote",
+        "supply": "Insumo"
+      },
+      "category": {
+        "sports": "Deportes",
+        "tcg": "TCG",
+        "other": "Otro"
+      },
+      "status": {
+        "incoming": "En tránsito",
+        "in_stock": "En stock",
+        "listed": "Listado",
+        "reserved": "Reservado",
+        "sold": "Vendido",
+        "consigned_out": "En consignación",
+        "returned": "Devuelto",
+        "lost": "Perdido",
+        "consumed": "Abierto en break"
+      },
+      "owner": {
+        "own": "Propio",
+        "consignment": "Consignado"
+      }
     },
     "sell": {
       "title": "Vender",
@@ -83,12 +171,18 @@
     }
   },
   "store": {
-    "nav": { "shop": "Tienda", "about": "Nosotros", "policies": "Políticas" },
+    "nav": {
+      "shop": "Tienda",
+      "about": "Nosotros",
+      "policies": "Políticas"
+    },
     "home": {
       "title": "Cartas y cajas de colección",
       "subtitle": "Piezas graduadas, raw y selladas. Deportes y TCG.",
       "comingSoon": "El catálogo abre pronto."
     },
-    "footer": { "rights": "Todos los derechos reservados." }
+    "footer": {
+      "rights": "Todos los derechos reservados."
+    }
   }
 }
