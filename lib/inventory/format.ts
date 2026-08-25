@@ -142,3 +142,33 @@ export function toRowView(
     gain: serializeMoney(displayMoney(row.unrealized_gain, razonCosto)),
   };
 }
+
+/**
+ * Fechas.
+ *
+ * Postgres tiene dos tipos y se muestran distinto. Un `date` —como
+ * `acquisitions.purchased_at`— no tiene hora ni zona: es el día que dice, y
+ * punto. Pasarlo por `new Date("2026-08-14")` lo interpreta como medianoche
+ * UTC y al mostrarlo en Caracas (UTC−4) retrocede al 13. El dueño vería que
+ * compró un día antes de lo que compró.
+ *
+ * Un `timestamptz` sí es un instante y sí debe mostrarse en la zona de quien
+ * mira.
+ */
+
+/** Para columnas `date`: se muestra el día tal cual, sin convertir zona. */
+export function formatDateOnly(value: string | null | undefined, locale = "es-VE"): string | null {
+  if (!value) return null;
+  const soloFecha = value.slice(0, 10);
+  const [year, month, day] = soloFecha.split("-").map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(locale, {
+    timeZone: "UTC",
+  });
+}
+
+/** Para columnas `timestamptz`: un instante, mostrado donde está quien mira. */
+export function formatInstant(value: string | null | undefined, locale = "es-VE"): string | null {
+  if (!value) return null;
+  return new Date(value).toLocaleDateString(locale);
+}

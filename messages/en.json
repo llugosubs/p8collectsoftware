@@ -135,6 +135,71 @@
       "owner": {
         "own": "Own",
         "consignment": "Consigned"
+      },
+      "detail": {
+        "back": "Back to inventory",
+        "notFound": "That piece doesn't exist or was deleted.",
+        "photos": "Photos",
+        "noPhotos": "No photos yet.",
+        "data": "Details",
+        "money": "Money",
+        "timeline": "Timeline",
+        "valuations": "Value history",
+        "noValuations": "No valuations recorded.",
+        "publish": "Publish to store",
+        "unpublish": "Remove from store",
+        "published": "Published in the store",
+        "cannotPublish": "Can't publish yet",
+        "fields": {
+          "type": "Type",
+          "category": "Category",
+          "game": "Sport or game",
+          "player": "Player or character",
+          "brand": "Brand",
+          "set": "Set",
+          "year": "Year",
+          "number": "Number",
+          "variant": "Variant",
+          "serial": "Serial",
+          "grading": "Grader",
+          "grade": "Grade",
+          "cert": "Cert",
+          "condition": "Condition",
+          "language": "Language",
+          "quantity": "Quantity",
+          "location": "Location",
+          "owner": "Owner",
+          "status": "Status",
+          "sku": "SKU",
+          "tags": "Tags"
+        },
+        "moneyFields": {
+          "cost": "Cost",
+          "allocated": "Allocated from lot",
+          "grading": "Grading",
+          "other": "Other costs",
+          "market": "Market value",
+          "list": "List price",
+          "min": "Minimum price",
+          "gain": "Unrealized gain"
+        },
+        "events": {
+          "purchased": "Purchased",
+          "received": "Received",
+          "listed": "Listed",
+          "sold": "Sold",
+          "pending": "Pending"
+        },
+        "blocked": {
+          "STATUS_NOT_SELLABLE": "Its status doesn't allow selling it.",
+          "NO_LIST_PRICE": "It needs a list price.",
+          "NO_PHOTO": "It needs at least one photo: a listing without a photo isn't a listing.",
+          "BELOW_CONSIGNOR_MIN": "The price is below the minimum agreed with the consignor.",
+          "CONSIGNMENT_TERMS_UNKNOWN": "This is a consigned card and your role can't see the agreement. Ask the owner."
+        },
+        "publishedOk": "Published to the store.",
+        "unpublishedOk": "Removed from the store.",
+        "publishFailed": "Couldn't change publication."
       }
     },
     "sell": {

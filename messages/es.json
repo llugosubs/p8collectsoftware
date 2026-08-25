@@ -135,6 +135,71 @@
       "owner": {
         "own": "Propio",
         "consignment": "Consignado"
+      },
+      "detail": {
+        "back": "Volver al inventario",
+        "notFound": "Esa pieza no existe o fue borrada.",
+        "photos": "Fotos",
+        "noPhotos": "Todavía no tiene fotos.",
+        "data": "Ficha",
+        "money": "Dinero",
+        "timeline": "Recorrido",
+        "valuations": "Historial de valor",
+        "noValuations": "Sin valoraciones registradas.",
+        "publish": "Publicar en tienda",
+        "unpublish": "Quitar de la tienda",
+        "published": "Publicada en la tienda",
+        "cannotPublish": "No se puede publicar todavía",
+        "fields": {
+          "type": "Tipo",
+          "category": "Categoría",
+          "game": "Deporte o juego",
+          "player": "Jugador o personaje",
+          "brand": "Marca",
+          "set": "Set",
+          "year": "Año",
+          "number": "Número",
+          "variant": "Variante",
+          "serial": "Serial",
+          "grading": "Gradadora",
+          "grade": "Grado",
+          "cert": "Cert",
+          "condition": "Condición",
+          "language": "Idioma",
+          "quantity": "Cantidad",
+          "location": "Ubicación",
+          "owner": "Dueño",
+          "status": "Estado",
+          "sku": "SKU",
+          "tags": "Etiquetas"
+        },
+        "moneyFields": {
+          "cost": "Costo",
+          "allocated": "Prorrateado del lote",
+          "grading": "Grading",
+          "other": "Otros costos",
+          "market": "Valor de mercado",
+          "list": "Precio de lista",
+          "min": "Precio mínimo",
+          "gain": "Ganancia no realizada"
+        },
+        "events": {
+          "purchased": "Comprada",
+          "received": "Recibida",
+          "listed": "Listada",
+          "sold": "Vendida",
+          "pending": "Pendiente"
+        },
+        "blocked": {
+          "STATUS_NOT_SELLABLE": "Su estado no permite venderla.",
+          "NO_LIST_PRICE": "Falta ponerle precio de lista.",
+          "NO_PHOTO": "Necesita al menos una foto: una ficha sin foto no es una ficha.",
+          "BELOW_CONSIGNOR_MIN": "El precio está por debajo del mínimo pactado con el consignante.",
+          "CONSIGNMENT_TERMS_UNKNOWN": "Es una carta consignada y tu rol no puede ver el acuerdo. Pídeselo al dueño."
+        },
+        "publishedOk": "Publicada en la tienda.",
+        "unpublishedOk": "Quitada de la tienda.",
+        "publishFailed": "No se pudo cambiar la publicación."
       }
     },
     "sell": {
