@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { ExportButton, LabelsLink } from "@/components/inventory/export-button";
 import { InventoryFilters } from "@/components/inventory/inventory-filters";
 import { InventoryGrid } from "@/components/inventory/inventory-grid";
 import { InventoryPagination } from "@/components/inventory/inventory-pagination";
@@ -91,6 +92,8 @@ export default async function InventoryPage({
           <span className="text-muted-foreground text-sm tabular-nums">
             {t("results", { count: page.total })}
           </span>
+          <LabelsLink />
+          <ExportButton />
           <ViewSwitch />
         </div>
       </div>

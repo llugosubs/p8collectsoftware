@@ -208,3 +208,33 @@ export async function fetchInventoryValuation(
     marketValue: readNullableNumeric(row.market_value),
   }));
 }
+
+/**
+ * Todas las filas que cumplen el filtro, para exportar.
+ *
+ * Comparte el mismo constructor de filtros que la tabla —una sola definición de
+ * qué significa cada filtro— pero no pasa por `perPage`, que está limitado a
+ * los tamaños de página de la interfaz. Lleva su propio tope: un archivo de
+ * cien mil filas no lo abre nadie, y la consulta tumbaría la petición.
+ */
+export const EXPORT_ROW_LIMIT = 10_000;
+
+export async function fetchInventoryForExport(
+  supabase: InventoryClient,
+  params: InventoryParams,
+  options: InventoryQueryOptions,
+): Promise<{ rows: UsableInventoryRow[]; truncated: boolean }> {
+  const query = aplicarFiltros(baseQuery(supabase, INVENTORY_COLUMNS, false), params, options)
+    .order(params.sort === "cost_basis" && !options.canSeeCosts ? "created_at" : params.sort, {
+      ascending: params.dir === "asc",
+      nullsFirst: false,
+    })
+    .order("id", { ascending: true })
+    .range(0, EXPORT_ROW_LIMIT - 1);
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  const rows = ((data ?? []) as unknown as InventoryRow[]).filter(esUsable);
+  return { rows, truncated: rows.length === EXPORT_ROW_LIMIT };
+}

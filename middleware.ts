@@ -6,12 +6,19 @@ import { updateSession } from "@/lib/supabase/middleware";
 
 const intlMiddleware = createIntlMiddleware(routing);
 
-/** Rutas que no llevan segmento de idioma: el panel y todo el flujo de acceso. */
+/**
+ * Rutas que no llevan segmento de idioma: el panel y todo el flujo de acceso.
+ *
+ * `/forbidden` tiene que estar aquí. Sin él, next-intl lo reescribe a
+ * `/en/forbidden`, que no existe, y quien no tiene permiso ve un 404 en vez de
+ * la explicación de por qué no puede entrar.
+ */
 function isSingleLocaleArea(pathname: string): boolean {
   return (
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/login" ||
+    pathname === "/forbidden" ||
     pathname.startsWith("/auth/")
   );
 }

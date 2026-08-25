@@ -255,6 +255,13 @@
           "UNBALANCED": "El reparto no cuadra con el costo de la caja.",
           "FAILED": "No se pudo abrir el break."
         }
+      },
+      "labels": {
+        "title": "Etiquetas",
+        "print": "Imprimir",
+        "empty": "No hay piezas para etiquetar.",
+        "hint": "Cada etiqueta lleva el SKU y su código QR. Imprime en hoja adhesiva y recorta por las guías.",
+        "openLabels": "Etiquetas con QR"
       }
     },
     "sell": {

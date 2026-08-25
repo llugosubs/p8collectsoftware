@@ -255,6 +255,13 @@
           "UNBALANCED": "The split doesn't match the box cost.",
           "FAILED": "Couldn't open the break."
         }
+      },
+      "labels": {
+        "title": "Labels",
+        "print": "Print",
+        "empty": "No pieces to label.",
+        "hint": "Each label carries the SKU and its QR code. Print on sticker sheets and cut along the guides.",
+        "openLabels": "QR labels"
       }
     },
     "sell": {
