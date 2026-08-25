@@ -5,6 +5,96 @@ Formato: una entrada por fase. Ver las fases en la sección 11 del
 
 ---
 
+## Fase 2 · Entrega A — Inventario · 25 de agosto de 2026
+
+El primer módulo que sirve para trabajar. Antes hubo que pagar deuda.
+
+### La deuda de la Fase 1
+
+Diseñar los tres módulos de la fase con crítica adversarial destapó **nueve defectos** en lo
+ya construido. Cada uno se verificó contra la base antes de creerlo.
+
+El más serio era silencioso: `fromDbNumeric` convertía `NULL` en cero, así que un `staff`
+habría visto costo **$0.00** y una ganancia no realizada igual al valor de mercado completo.
+El RLS ocultaba bien el dato; la función de lectura lo convertía en una cifra falsa que nada
+delataba. Es la misma lección que el prototipo anterior ya había aprendido con los precios
+de mercado — una carta sin comp no vale cero — cometida otra vez en otra forma.
+
+Los otros ocho: el admin veía los items borrados; `item_images` e `item_valuations` no
+tenían auditoría, y una valuación mueve la mitad de la cifra de valor de inventario; el slug
+chocaba entre años; `acquisition_lines` no tenía orden, así que el residuo del redondeo
+podía saltar de pieza al recalcular un lote; las compras sin número de subasta no tenían
+protección contra el doble envío; **un `viewer` podía subir fotos** a un bucket público y un
+`staff` dejaba archivos huérfanos servidos para siempre; el bucket rechazaba los `.xlsx` del
+importador; y `acquisitions.fx_rate` significaba dos cosas a la vez.
+
+El prorrateo ahora **exige** el número de línea y ordena por él: pasar una lista que salió
+de un `SELECT` sin `ORDER BY` dejó de ser posible.
+
+### Lo construido
+
+Listado con filtros, búsqueda por `search_vector`, paginación y valor por segmento. En
+escritorio es tabla ordenable; en móvil son tarjetas, porque nueve columnas en 375 px
+obligan a desplazar de lado para ver el precio.
+
+El valor va en **cuatro líneas separadas**, nunca sumadas: las cajas abiertas ya trasladaron
+su costo a las cartas que salieron y lo consignado es de terceros. Una sola cifra contaría
+dinero dos veces y sumaría plata ajena.
+
+Ficha de pieza, publicar en tienda con la razón visible cuando no se puede, fotos, breaks,
+etiquetas con QR, exportación CSV y acciones masivas.
+
+### Decisiones que sostienen el módulo
+
+- **El `NULL` de costo es un estado de primera clase.** `Decimal | null`, nunca cero. La
+  pantalla de un `staff` dice "sin acceso" y "—", y los totales reportan cuántas piezas
+  quedaron sin costo visible.
+- **El filtro por costo está cerrado en dos capas** para quien no ve costos: la interfaz no
+  lo ofrece y el servidor lo ignora aunque se arme la URL a mano. Con un rango y unos
+  intentos se deduce el costo exacto por búsqueda binaria.
+- **Las fotos se preparan en el navegador** antes de subir: se reducen a 2000 px y se
+  recodifican, lo que descarta el EXIF entero — incluida la geolocalización, que en una foto
+  tomada en casa es la dirección del dueño y que iría a un bucket público.
+- **Al borrar una foto, primero el archivo y después la fila.** Al revés, un fallo dejaría un
+  huérfano servido para siempre y sin fila que lo delate.
+- **Abrir un break entra por una función plpgsql** que corre en una transacción y solo
+  inserta: el reparto lo calcula `lib/domain` y la función únicamente asierta que los hijos
+  suman exactamente el costo de la caja. Probado con un reparto torcido: rechazado, y cero
+  filas escritas.
+- **Los hijos de un break heredan dueño y consignante**: las cartas que salen de la caja de
+  un tercero siguen siendo de ese tercero.
+- **Una fila con varias cajas no se abre**: pasaría todas a consumidas y el índice único
+  impediría abrir la segunda, perdiendo existencia real.
+- **El CSV neutraliza la inyección de fórmulas.** Excel ejecuta cualquier celda que empiece
+  por `=`, `+`, `-` o `@`, y este archivo se le manda al contador.
+- **Publicar no está entre las acciones masivas**: exige condiciones por pieza, y un botón
+  que publica quince de las que ocho fallan en silencio es peor que no tenerlo.
+
+### Dos errores más, encontrados verificando en el navegador
+
+- La compra del **14 de agosto** se mostraba como el **13**. Un `date` de Postgres no tiene
+  zona horaria, y `new Date()` lo vuelve medianoche UTC, que en Caracas retrocede un día.
+- **`/forbidden` no estaba en la lista de rutas sin idioma**, así que next-intl lo reescribía
+  a `/en/forbidden`, que no existe: quien no tenía permiso veía un 404 en lugar de la
+  explicación.
+
+### Verificación
+
+81 tests unitarios y 28 pgTAP, con las migraciones aplicadas desde cero. Y con dos sesiones
+reales en el navegador: el `owner` ve costo 6.761,13 y ganancia 259,87; el `staff` ve las
+mismas 15 piezas, con "sin acceso" donde iría el costo y "15 piezas sin costo visible" al
+pie. El filtro por costo le devuelve 15 filas en vez de 6, porque el servidor lo ignora.
+
+La subida de una foto de 3000×4200 sale como WebP de 1429×2000 y 7 KB, sin EXIF ni GPS. Un
+break con reparto ponderado 5:1:1:1:1 sobre una caja de 113,0779 da 62,8211 + 12,5642 × 4 =
+113,0779 exacto.
+
+### Pendiente de la fase
+
+Compras (Entrega B), Importador (Entrega C) y los tres extras (Entrega D).
+
+---
+
 ## Fase 1 — Modelo de datos completo · 24 de agosto de 2026
 
 Catorce migraciones con el esquema de negocio entero, sus políticas y la regla de
