@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { toCsv } from "@/lib/inventory/csv";
 import { fetchInventoryForExport } from "@/lib/inventory/query";
-import { formatDateOnly, formatGrade, itemTitle } from "@/lib/inventory/format";
+import { formatGrade, formatInstant, itemTitle } from "@/lib/inventory/format";
 import { parseInventoryParams } from "@/lib/inventory/params";
 import { createClient } from "@/lib/supabase/server";
 
@@ -96,9 +96,10 @@ export async function GET(request: NextRequest) {
     item.list_price,
     ...(canSeeCosts ? [item.cost_basis, item.unrealized_gain] : []),
     item.is_published ? "si" : "no",
-    formatDateOnly(item.received_at),
-    formatDateOnly(item.listed_at),
-    formatDateOnly(item.sold_at),
+    // Estas tres son `timestamptz`, no `date`: llevan zona horaria.
+    formatInstant(item.received_at),
+    formatInstant(item.listed_at),
+    formatInstant(item.sold_at),
   ]);
 
   const csv = toCsv(headers, rows);

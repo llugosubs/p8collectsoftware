@@ -29,9 +29,15 @@ export async function middleware(request: NextRequest) {
 
   // La tienda pasa por next-intl (redirige y reescribe según el idioma).
   // El panel no: siempre español, sin prefijo.
-  const response = singleLocale ? NextResponse.next({ request }) : intlMiddleware(request);
+  //
+  // Se pasa una FUNCIÓN, no una respuesta ya hecha: si Supabase rota el token,
+  // `updateSession` tiene que rehacer la respuesta con el request ya
+  // actualizado. Si no, la página de abajo lee las cookies viejas y la primera
+  // pantalla después de entrar dice "sin acceso".
+  const construirRespuesta = () =>
+    singleLocale ? NextResponse.next({ request }) : intlMiddleware(request);
 
-  const user = await updateSession(request, response);
+  const { user, response } = await updateSession(request, construirRespuesta);
 
   const isAdminArea = pathname === "/admin" || pathname.startsWith("/admin/");
 

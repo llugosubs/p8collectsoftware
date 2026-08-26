@@ -8,7 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-mono: var(--font-mono-brand), ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -48,83 +48,201 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.25rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+/* ==========================================================================
+   P8 COLLECTS — tokens de marca
+   ==========================================================================
+
+   Cuatro colores y tres temas. La regla que manda: UN SOLO ACENTO POR
+   PANTALLA. El dorado marca lo que importa; si todo es dorado, nada lo es.
+
+   Ningún componente escribe un hex. Todos leen estas variables, y por eso
+   cambiar de tema no toca una sola línea de componente.
+
+   Un detalle de contraste que no es cosmético: el dorado #C9A96E sobre
+   charcoal da 8.7:1 y se lee perfecto, pero sobre crema da 1.7:1 y es
+   ilegible. Por eso hay dos variables distintas: `--accent` es el RELLENO
+   (botones, barras) y `--accent-text` es el dorado que se puede LEER encima
+   del fondo de cada tema. En el tema claro son colores distintos a propósito.
+   ========================================================================== */
+
+:root,
+[data-theme="dark"] {
+  --brand-charcoal: #0d0d0d;
+  --brand-cream: #efe6d3;
+  --brand-gold: #c9a96e;
+  --brand-vault: #0f2a1e;
+
+  --bg: var(--brand-charcoal);
+  --surface: #151515;
+  --surface-raised: #1c1c1c;
+  --text: var(--brand-cream);
+  --text-muted: #938d7f;
+  --brand-accent: var(--brand-gold);
+  --accent-text: var(--brand-gold);
+  --accent-contrast: var(--brand-charcoal);
+  --border-color: rgba(239, 230, 211, 0.14);
+  --overlay: rgba(13, 13, 13, 0.65);
+
+  /* Estados del sistema. Los únicos sitios donde entra color que no sea el
+     acento — y ganancia y pérdida cuentan como estado, no como decoración. */
+  --positive: #4ba36f;
+  --negative: #d2635b;
+  --warning: #d8a340;
+  --neutral: #8a857a;
+  --consigned: #7fa98d;
+
+  --radius: 0.625rem; /* 10 px: el radio de la card de carta */
+
+  /* ------------------------------------------------------------------
+     Puente con shadcn.
+
+     Aquí hay una trampa que costó una pantalla ilegible: en shadcn,
+     `--muted` y `--accent` NO son colores de marca, son SUPERFICIES.
+     `bg-muted` es el fondo de un placeholder y `bg-accent` es el fondo de
+     hover de menús e ítems de lista.
+
+     Cargarles el gris de texto y el dorado hacía dos destrozos: el rótulo
+     "sin foto" quedaba del mismo color exacto que su fondo (1:1, invisible),
+     y CADA hover de la aplicación se encendía en dorado — lo contrario de
+     "un solo acento por pantalla".
+
+     Por eso el dorado vive solo en `--primary` y en `--accent-text`, y las
+     superficies son superficies.
+     ------------------------------------------------------------------ */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text);
+
+  --primary: var(--brand-accent);
+  --primary-foreground: var(--accent-contrast);
+
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--text);
+
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--text-muted);
+
+  --accent: var(--surface-raised);
+  --accent-foreground: var(--text);
+
+  --destructive: var(--negative);
+  --border: var(--border-color);
+  --input: var(--border-color);
+  --ring: var(--brand-accent);
+
+  --chart-1: var(--brand-gold);
+  --chart-2: #8f7b4e;
+  --chart-3: var(--consigned);
+  --chart-4: var(--muted);
+  --chart-5: var(--brand-cream);
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--text);
+  --sidebar-primary: var(--accent);
+  --sidebar-primary-foreground: var(--accent-contrast);
+  --sidebar-accent: var(--surface-raised);
+  --sidebar-accent-foreground: var(--text);
+  --sidebar-border: var(--border-color);
+  --sidebar-ring: var(--accent);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* Tema claro: facturas, PDF para el socio, impresión. */
+[data-theme="light"] {
+  --bg: var(--brand-cream);
+  --surface: #ffffff;
+  --surface-raised: #faf6ee;
+  --text: var(--brand-charcoal);
+  --text-muted: #6b6659;
+  --brand-accent: var(--brand-gold);
+  /* Dorado legible sobre crema: el #C9A96E aquí no llega ni a 2:1. */
+  --accent-text: #6e5528;
+  --accent-contrast: var(--brand-charcoal);
+  --border-color: rgba(13, 13, 13, 0.16);
+  --overlay: rgba(13, 13, 13, 0.35);
+
+  --positive: #1f6b41;
+  --negative: #a3352c;
+  --warning: #8a5f10;
+  --neutral: #6b6659;
+  --consigned: #2f6b4a;
+}
+
+/* Vault: la sección premium. Mismo layout, fondo verde. */
+[data-theme="vault"] {
+  --bg: var(--brand-vault);
+  --surface: #143526;
+  --surface-raised: #1a4030;
+  --text: var(--brand-cream);
+  --text-muted: #9ab0a3;
+  --brand-accent: var(--brand-gold);
+  --accent-text: var(--brand-gold);
+  --accent-contrast: var(--brand-vault);
+  --border-color: rgba(239, 230, 211, 0.16);
+  --overlay: rgba(15, 42, 30, 0.65);
+
+  /* Sobre el verde del vault, el rojo del tema oscuro se queda en 4.14:1 y no
+     alcanza AA para texto normal. Este llega a 5.37:1. */
+  --negative: #e07d74;
+  --positive: #5fbb84;
+}
+
+@theme inline {
+  --color-accent-text: var(--accent-text);
+  --color-overlay: var(--overlay);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-positive: var(--positive);
+  --color-negative: var(--negative);
+  --color-warning: var(--warning);
+  --color-neutral: var(--neutral);
+  --color-consigned: var(--consigned);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  html {
+    @apply font-sans;
+    background-color: var(--bg);
+    color: var(--text);
+  }
+
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+
+  /* Titulares en 600 con tracking cerrado, como manda la guía. */
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
+
+  /* Cifras, precios, IDs y tablas en mono con cifras de ancho fijo: sin esto
+     las columnas de dinero bailan de fila en fila. */
+  .tabular-nums,
+  td .tabular-nums,
+  [data-numeric] {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Eyebrow / etiqueta: mayúsculas con tracking abierto. */
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+  font-size: 0.6875rem;
+}
+
+/* Filas de tabla de 44 px, como especifica la guía. */
+.table-row-brand {
+  height: 44px;
 }

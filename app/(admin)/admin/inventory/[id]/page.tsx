@@ -263,8 +263,8 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
                   <dd
                     className={cn(
                       "tabular-nums",
-                      (item.unrealized_gain ?? 0) > 0 && "text-[#0F7B3F]",
-                      (item.unrealized_gain ?? 0) < 0 && "text-[#B91C1C]",
+                      (item.unrealized_gain ?? 0) > 0 && "text-positive",
+                      (item.unrealized_gain ?? 0) < 0 && "text-negative",
                     )}
                   >
                     <Cifra raw={item.unrealized_gain} hidden={!canSeeCosts} />

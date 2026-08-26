@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { JetBrains_Mono, Montserrat } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
@@ -17,6 +17,15 @@ import "../globals.css";
 const montserrat = Montserrat({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+/** Cifras, precios, IDs y tablas. Sin esto las columnas de dinero bailan. */
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono-brand",
+  subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -30,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#0D0D0D",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -40,7 +49,12 @@ export default async function AdminRootLayout({ children }: { children: React.Re
   const messages = await getMessages();
 
   return (
-    <html lang="es" className={montserrat.variable} suppressHydrationWarning>
+    <html
+      lang="es"
+      data-theme="dark"
+      className={`${montserrat.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="bg-background text-foreground antialiased">
         <NextIntlClientProvider messages={messages}>
           {children}

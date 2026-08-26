@@ -68,8 +68,8 @@ export async function InventoryTotalsPanel({ totals }: { totals: InventoryTotals
                   <dd
                     className={cn(
                       "font-medium tabular-nums",
-                      gain !== null && gain.isPositive() && "text-[#0F7B3F]",
-                      gain !== null && gain.isNegative() && "text-[#B91C1C]",
+                      gain !== null && gain.isPositive() && "text-positive",
+                      gain !== null && gain.isNegative() && "text-negative",
                     )}
                   >
                     {gain === null ? (

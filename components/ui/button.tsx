@@ -8,7 +8,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // Botón primario de la marca: fondo dorado, texto charcoal, mayúsculas
+        // con tracking. Es el único elemento dorado sólido de una pantalla.
+        default:
+          "bg-primary text-primary-foreground hover:bg-primary/85 uppercase tracking-[0.08em] font-semibold",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:
@@ -18,6 +21,9 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Fantasma de la marca: borde y texto dorados, sin relleno. Para la
+        // acción secundaria que acompaña a una primaria.
+        gold: "border border-accent-text text-accent-text hover:bg-primary/10 uppercase tracking-[0.08em] font-semibold",
       },
       size: {
         default:

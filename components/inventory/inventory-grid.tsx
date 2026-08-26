@@ -5,6 +5,16 @@ import { ImageOff } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import type { InventoryRowView } from "@/lib/inventory/format";
+import { cn } from "@/lib/utils";
+
+/**
+ * Una carta suelta y un slab graduado no tienen la misma forma: la carcasa de
+ * PSA es más alta y estrecha. La guía de marca las separa (2.5/3.5 contra
+ * 3.25/5.25) y usar una sola proporción deforma la foto de la otra.
+ */
+function esSlab(type: string): boolean {
+  return type === "graded_card";
+}
 
 import { MoneyText } from "./money-view";
 
@@ -33,9 +43,14 @@ export async function InventoryGrid({
           <li key={row.id}>
             <Link
               href={`/admin/inventory/${row.id}`}
-              className="group border-border hover:border-foreground block overflow-hidden rounded border transition-colors"
+              className="group border-border hover:border-foreground block overflow-hidden rounded-lg border transition-colors"
             >
-              <div className="bg-muted relative aspect-[5/7]">
+              <div
+                className={cn(
+                  "bg-muted relative",
+                  esSlab(row.type) ? "aspect-[3.25/5.25]" : "aspect-[2.5/3.5]",
+                )}
+              >
                 {foto ? (
                   <Image
                     src={foto}

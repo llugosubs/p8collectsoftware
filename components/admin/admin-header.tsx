@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { LogOut } from "lucide-react";
 
 import { signOut } from "@/app/(admin)/admin/actions";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +28,8 @@ export async function AdminHeader({
 
   return (
     <header className="border-border bg-background sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b px-4">
-      <span className="text-sm font-semibold tracking-[0.2em] uppercase md:hidden">
-        {t("brand")}
+      <span className="md:hidden">
+        <BrandMark height={18} />
       </span>
       <div className="ml-auto flex items-center gap-3">
         <Badge variant="secondary" className="hidden sm:inline-flex">

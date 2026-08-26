@@ -39,8 +39,8 @@ export function MoneyText({
     <span
       className={cn(
         "tabular-nums",
-        positivo && "text-[#0F7B3F]",
-        negativo && "text-[#B91C1C]",
+        positivo && "text-positive",
+        negativo && "text-negative",
         className,
       )}
     >

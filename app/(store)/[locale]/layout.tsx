@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
+import { JetBrains_Mono, Montserrat } from "next/font/google";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
@@ -13,6 +13,15 @@ import "../../globals.css";
 const montserrat = Montserrat({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
+/** Cifras, precios, IDs y tablas. Sin esto las columnas de dinero bailan. */
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono-brand",
+  subsets: ["latin"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -25,7 +34,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#0D0D0D",
   width: "device-width",
   initialScale: 1,
 };
@@ -51,7 +60,12 @@ export default async function StoreRootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={montserrat.variable} suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-theme="dark"
+      className={`${montserrat.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <body className="bg-background text-foreground flex min-h-dvh flex-col antialiased">
         <NextIntlClientProvider messages={messages}>
           <StoreHeader />

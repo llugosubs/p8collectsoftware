@@ -61,7 +61,9 @@ export default async function LabelsPage({
   );
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6">
+    /* Tema claro: esta página se imprime, y el navegador no manda los fondos
+       a la impresora. Con el tema oscuro salía crema sobre papel blanco. */
+    <div data-theme="light" className="bg-background mx-auto w-full max-w-5xl px-4 py-6">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>

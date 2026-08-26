@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 
 import { BulkActions } from "./bulk-actions";
 import { MoneyText } from "./money-view";
+import { OwnerBadge, StatusBadge } from "./status-badge";
 
 /**
  * La tabla del inventario.
@@ -113,17 +114,11 @@ export function InventoryTable({
 
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
                   <span className="text-muted-foreground font-mono text-[11px]">{row.sku}</span>
-                  <Badge variant="secondary" className="font-normal">
+                  <Badge variant="outline" className="font-normal">
                     {row.grade}
                   </Badge>
-                  <Badge variant="outline" className="font-normal">
-                    {t(`status.${row.status}`)}
-                  </Badge>
-                  {row.ownerType === "consignment" && (
-                    <Badge variant="outline" className="font-normal">
-                      {t("owner.consignment")}
-                    </Badge>
-                  )}
+                  <StatusBadge status={row.status} />
+                  <OwnerBadge ownerType={row.ownerType} />
                   {row.quantity > 1 && (
                     <Badge variant="outline" className="font-normal tabular-nums">
                       ×{row.quantity}
@@ -227,14 +222,8 @@ export function InventoryTable({
 
                 <TableCell>
                   <div className="flex flex-wrap items-center gap-1">
-                    <Badge variant="secondary" className="font-normal">
-                      {t(`status.${row.status}`)}
-                    </Badge>
-                    {row.ownerType === "consignment" && (
-                      <Badge variant="outline" className="font-normal">
-                        {t("owner.consignment")}
-                      </Badge>
-                    )}
+                    <StatusBadge status={row.status} />
+                    <OwnerBadge ownerType={row.ownerType} />
                     {row.quantity > 1 && (
                       <Badge variant="outline" className="font-normal tabular-nums">
                         ×{row.quantity}

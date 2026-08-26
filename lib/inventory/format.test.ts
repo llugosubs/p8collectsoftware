@@ -6,12 +6,12 @@ describe("fechas", () => {
   it("muestra un `date` en su propio día, sin retroceder por zona horaria", () => {
     // El error que este proyecto ya cometió: `new Date("2026-08-14")` es
     // medianoche UTC, y en Caracas (UTC−4) se ve como el 13.
-    expect(formatDateOnly("2026-08-14", "es-VE")).toBe("14/8/2026");
-    expect(formatDateOnly("2026-01-01", "es-VE")).toBe("1/1/2026");
+    expect(formatDateOnly("2026-08-14", "es-VE")).toBe("14/08/2026");
+    expect(formatDateOnly("2026-01-01", "es-VE")).toBe("01/01/2026");
   });
 
   it("acepta un timestamp completo y se queda con el día", () => {
-    expect(formatDateOnly("2026-08-14T00:00:00+00:00", "es-VE")).toBe("14/8/2026");
+    expect(formatDateOnly("2026-08-14T00:00:00+00:00", "es-VE")).toBe("14/08/2026");
   });
 
   it("devuelve null cuando no hay fecha", () => {

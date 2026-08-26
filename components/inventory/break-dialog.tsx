@@ -218,7 +218,7 @@ export function BreakDialog({
                   )}
                 </dd>
               </div>
-              <p className="pt-1 text-xs text-[#0F7B3F]">{t("balanced")}</p>
+              <p className="text-positive pt-1 text-xs">{t("balanced")}</p>
             </dl>
           )}
 

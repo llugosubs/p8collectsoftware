@@ -1839,6 +1839,7 @@ export type Database = {
     }
     Functions: {
       can_access_admin: { Args: never; Returns: boolean }
+      create_acquisition: { Args: { p_payload: Json }; Returns: Json }
       current_consignor_id: { Args: never; Returns: string }
       current_fx_rate: {
         Args: { p_source?: Database["public"]["Enums"]["fx_source"] }
@@ -1852,6 +1853,13 @@ export type Database = {
       is_staff_or_above: { Args: never; Returns: boolean }
       next_document_number: { Args: { p_prefix: string }; Returns: string }
       open_break: { Args: { p_payload: Json }; Returns: Json }
+      set_acquisition_received: {
+        Args: {
+          p_acquisition_id: string
+          p_status: Database["public"]["Enums"]["acquisition_received_status"]
+        }
+        Returns: Json
+      }
     }
     Enums: {
       account_type:

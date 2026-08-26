@@ -82,8 +82,29 @@ narrowing. Los tipos de la base se generan con `supabase gen types`, no se escri
 **Commits.** Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`,
 `refactor:`). Un commit por unidad de trabajo coherente.
 
-**Identidad visual.** Limpio, blanco con acento, tipografía Montserrat. El monograma P8 y
-el wordmark **nunca se usan juntos**. Logo en SVG.
+**Identidad visual.** La fuente de verdad es
+[`docs/BRAND.md`](docs/BRAND.md), no la sección 8 del master prompt: el dueño entregó la
+guía de marca después y **la guía manda**. Se aparta del master prompt en dos puntos, los
+dos a propósito:
+
+- El master prompt decía "blanco con acento"; la guía fija **tema oscuro por defecto**
+  (charcoal #0D0D0D) con crema #EFE6D3 y dorado #C9A96E como acento único.
+- El master prompt decía que el monograma y el wordmark **nunca van juntos**; la guía dice
+  exactamente lo contrario: son un lockup y **nunca se separan**, y "Collects" no se
+  renderiza como texto en ningún caso — siempre imagen.
+
+Tres temas por `data-theme` en `<html>`: `dark` (panel y tienda), `light` (facturas, PDF,
+impresión) y `vault` (sección premium). Ningún componente escribe un hex: todos leen los
+tokens de [`app/globals.css`](app/globals.css).
+
+**Un solo acento por pantalla.** El dorado marca lo que importa; si todo es dorado, nada lo
+es. Ojo con una trampa que ya costó una pantalla ilegible: en shadcn, `--muted` y `--accent`
+NO son colores de marca, son **superficies** (`bg-muted`, `hover:bg-accent`). El dorado vive
+solo en `--primary` y `--accent-text`.
+
+Montserrat 400/500/600 para texto; **JetBrains Mono con `tabular-nums`** para cifras,
+precios, IDs y tablas. Precios en `$` con dos decimales y **Bs sin decimales**. Fechas
+dd/mm/yyyy en zona `America/Caracas`.
 
 **Secretos.** Todas las variables documentadas en `.env.example` con valores de ejemplo.
 Nunca commitear un secreto real.
@@ -101,16 +122,16 @@ Nunca commitear un secreto real.
 
 Fases (detalle en la sección 11 del master prompt):
 
-| Fase | Contenido                                                                  | Estado    |
-| ---- | -------------------------------------------------------------------------- | --------- |
-| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | **hecha** |
-| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | **hecha** |
-| 2    | Inventario + Compras + Importador de Excel                                 | pendiente |
-| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente |
-| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente |
-| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente |
-| 6    | Consignación y portal de consignante                                       | pendiente |
-| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente |
+| Fase | Contenido                                                                  | Estado                      |
+| ---- | -------------------------------------------------------------------------- | --------------------------- |
+| 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | **hecha**                   |
+| 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | **hecha**                   |
+| 2    | Inventario + Compras + Importador de Excel                                 | Entrega A hecha; B en curso |
+| 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                   |
+| 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                   |
+| 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                   |
+| 6    | Consignación y portal de consignante                                       | pendiente                   |
+| 7    | Endurecimiento: PWA offline, e2e, Lighthouse, backups, documentación       | pendiente                   |
 
 ---
 

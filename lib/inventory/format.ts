@@ -162,13 +162,25 @@ export function formatDateOnly(value: string | null | undefined, locale = "es-VE
   const soloFecha = value.slice(0, 10);
   const [year, month, day] = soloFecha.split("-").map(Number);
   if (!year || !month || !day) return null;
+  // dd/mm/yyyy con dos dígitos, como pide la guía de marca: en una columna de
+  // fechas, "1/8/2026" y "14/8/2026" no alinean.
   return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(locale, {
     timeZone: "UTC",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
   });
 }
 
 /** Para columnas `timestamptz`: un instante, mostrado donde está quien mira. */
 export function formatInstant(value: string | null | undefined, locale = "es-VE"): string | null {
   if (!value) return null;
-  return new Date(value).toLocaleDateString(locale);
+  // Zona horaria de Caracas, fijada: el panel se mira desde ahí, y dejarlo al
+  // navegador haría que el mismo dato se viera distinto en otro huso.
+  return new Date(value).toLocaleDateString(locale, {
+    timeZone: "America/Caracas",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 }

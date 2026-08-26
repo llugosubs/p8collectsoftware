@@ -122,16 +122,33 @@ export function usdToVes(amountUsd: MoneyInput, rate: MoneyInput): Decimal {
 
 export type SupportedCurrency = "USD" | "VES";
 
-/** Formato de presentación. Redondea a centavos: nadie lee cuatro decimales. */
+/**
+ * Formato de presentación.
+ *
+ * Dos reglas de la guía de marca, y las dos tienen razón práctica:
+ *
+ * · **Dólares con dos decimales, bolívares sin ninguno.** Con la inflación
+ *   venezolana, los céntimos de bolívar no significan nada y solo alargan la
+ *   cifra: "Bs 1.348.920" se lee, "Bs 1.348.920,37" estorba.
+ *
+ * · **El símbolo va antes del número**, siempre, con un espacio fino. Es la
+ *   forma en que se leen las cifras en las tablas del panel.
+ *
+ * El redondeo a lo que se muestra ocurre aquí y solo aquí. Por dentro el monto
+ * conserva sus cuatro decimales.
+ */
 export function formatMoney(
   value: MoneyInput,
   currency: SupportedCurrency = "USD",
   locale = "es-VE",
 ): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: CENTS_SCALE,
-    maximumFractionDigits: CENTS_SCALE,
-  }).format(toCents(value).toNumber());
+  const decimales = currency === "VES" ? 0 : CENTS_SCALE;
+  const simbolo = currency === "VES" ? "Bs" : "$";
+
+  const numero = new Intl.NumberFormat(locale, {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  }).format(money(value).toDecimalPlaces(decimales, Decimal.ROUND_HALF_UP).toNumber());
+
+  return `${simbolo}\u202f${numero}`;
 }

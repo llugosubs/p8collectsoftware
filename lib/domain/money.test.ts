@@ -112,11 +112,23 @@ describe("conversión de moneda", () => {
 });
 
 describe("formato", () => {
-  it("presenta dólares con dos decimales", () => {
-    expect(formatMoney("1234.5", "USD", "en-US")).toBe("$1,234.50");
+  const fino = "\u202f";
+
+  it("presenta dólares con dos decimales y el símbolo delante", () => {
+    expect(formatMoney("1234.5", "USD", "es-VE")).toBe(`$${fino}1.234,50`);
   });
 
   it("nunca muestra los cuatro decimales internos", () => {
-    expect(formatMoney("10.12345", "USD", "en-US")).toBe("$10.12");
+    expect(formatMoney("10.12345", "USD", "es-VE")).toBe(`$${fino}10,12`);
+  });
+
+  it("presenta bolívares SIN decimales", () => {
+    // Con la inflación venezolana los céntimos de bolívar no significan nada
+    // y solo alargan la cifra en una tabla.
+    expect(formatMoney("1348920.37", "VES", "es-VE")).toBe(`Bs${fino}1.348.920`);
+  });
+
+  it("redondea el bolívar al entero más cercano", () => {
+    expect(formatMoney("1348920.61", "VES", "es-VE")).toBe(`Bs${fino}1.348.921`);
   });
 });
