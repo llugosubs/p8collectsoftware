@@ -5,6 +5,72 @@ Formato: una entrada por fase. Ver las fases en la sección 11 del
 
 ---
 
+## Fase 2 · Entrega B — Compras · 26 de agosto de 2026
+
+Wizard de cuatro pasos, listado con alerta de lotes que no llegan, y ficha del lote.
+
+> Nota de historial: el código de esta entrega se publicó dentro del commit `09bb8da`
+> ("aplicar la guía de marca"), porque ese commit usó `git add -A` mientras Compras estaba a
+> medio verificar. El mensaje de aquel commit no lo menciona; queda registrado aquí.
+
+### La ruta única de escritura
+
+Un lote son cuatro tablas que tienen que nacer juntas: `acquisitions`,
+`acquisition_lines`, `items` e `item_costs`. Un lote a medio escribir deja inventario
+fantasma con SKU consumido y un total que no cuadra con la suma de sus piezas.
+
+`supabase-js` no da transacciones, así que la escritura entra por
+`create_acquisition(jsonb)`: una función plpgsql `security invoker` que corre entera en una
+transacción y **solo inserta**. El prorrateo lo calcula `lib/domain/allocation.ts` y la
+función únicamente asierta dos invariantes: que el martillo declarado sea la suma de las
+líneas, y que lo que costó cada pieza sume exactamente lo que costó el lote.
+
+**La misma función la usará el importador de la Entrega C.** Tres módulos que crean
+inventario con costo por un solo camino, no por tres.
+
+### Decisiones que sostienen el módulo
+
+- **El servidor recalcula el prorrateo** desde los martillos validados y descarta lo que
+  mandó el navegador. Un Server Action es un endpoint público; aceptar un `allocated_cost`
+  del cliente dejaría que cualquiera con sesión escriba la cifra que decide si una venta
+  ganó o perdió dinero. Lo del wizard es previsualización.
+- **Clave de idempotencia.** Dos toques en "Confirmar" —o un reintento tras un timeout de
+  red con la transacción ya comprometida— devuelven el lote que ya existe. El índice único
+  de `(platform, reference)` no cubría esto: es parcial, y las compras a particulares no
+  traen número de subasta.
+- **Marcar un lote como recibido mueve sus piezas** de `incoming` a `in_stock` con su fecha.
+  Sin eso, el lote llegaba a Caracas y las cartas seguían invisibles como inventario.
+- **El wizard es un borrador local** con autoguardado: se pueden teclear quince cartas,
+  cerrar la pestaña sin querer y volver donde ibas.
+- **El fee de tarjeta se sugiere y deja de recalcularse en cuanto lo tocas.** El número que
+  manda es el del estado de cuenta, no el nuestro.
+- **Pre-vuelo de certs** antes de habilitar el botón: descubrir el choque dentro de la
+  transacción revierte el lote —correcto— pero el dueño acaba de teclear quince cartas y no
+  sabría cuál falló.
+- **"Pagado vs mercado" muestra tres cifras**, no dos: costo, realizado, y mercado de lo que
+  queda. Mezclar lo vendido con lo que sigue en la bóveda esconde cuál es cuál.
+
+### Un error del middleware, corregido
+
+Cuando Supabase rotaba el token a mitad de la petición, la página de abajo seguía leyendo
+las cookies viejas: la respuesta se construía **antes** del refresco y congelaba el request.
+El síntoma era feo y difícil de atribuir — entrabas con tu enlace mágico y la primera
+pantalla decía "sin acceso"; recargabas y funcionaba. Ahora la respuesta se reconstruye
+dentro de `setAll`, con el request ya actualizado.
+
+### Verificación
+
+De punta a punta en el navegador, con un lote real de tres cartas de Goldin:
+
+- Fee de tarjeta sugerido **52,0641** = 3,3 % de 1.577,70, exacto.
+- Reparto **1.154,19 + 435,20 + 195,87 = 1.785,26**, diferencia **0,0000** contra el total.
+- Al marcarlo recibido, las tres piezas pasaron a `in_stock` con su fecha.
+
+Contra la función, por separado: un martillo declarado que no cuadra y un prorrateo torcido
+se rechazan **sin escribir una fila**.
+
+---
+
 ## Fase 2 · Entrega A — Inventario · 25 de agosto de 2026
 
 El primer módulo que sirve para trabajar. Antes hubo que pagar deuda.
