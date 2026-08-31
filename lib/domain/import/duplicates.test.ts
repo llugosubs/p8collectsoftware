@@ -47,6 +47,15 @@ describe("claves de comparación", () => {
     // Una compra particular sin referencia nunca es duplicada por esta vía.
     expect(lotPositionKey({ ...vacia, platform: "private", cardNumber: "150" })).toBeNull();
   });
+
+  it("el grado se compara como número, no como texto", () => {
+    // La base devuelve 10.0 y el archivo dice 10. Comparados como texto serían
+    // cartas distintas y la duplicada se colaría al inventario.
+    const base = { ...vacia, platform: "alt", reference: "ALT-33", cardNumber: "150" };
+    expect(lotPositionKey({ ...base, grade: "10.0" })).toBe(
+      lotPositionKey({ ...base, grade: 10 }),
+    );
+  });
 });
 
 describe("duplicados", () => {

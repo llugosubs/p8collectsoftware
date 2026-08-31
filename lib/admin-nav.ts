@@ -7,6 +7,7 @@ import {
   Settings,
   ShoppingBag,
   Tag,
+  Upload,
   Users,
   Wallet,
   type LucideIcon,
@@ -28,6 +29,7 @@ export const PRIMARY_NAV: readonly AdminNavItem[] = [
 ] as const;
 
 export const SECONDARY_NAV: readonly AdminNavItem[] = [
+  { key: "import", href: "/admin/import", icon: Upload },
   { key: "accounts", href: "/admin/accounts", icon: Wallet },
   { key: "receivables", href: "/admin/receivables", icon: ClipboardList },
   { key: "customers", href: "/admin/customers", icon: Users },

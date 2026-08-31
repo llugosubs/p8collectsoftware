@@ -39,7 +39,8 @@
       "customers": "Customers",
       "reports": "Reports",
       "assistant": "Assistant",
-      "settings": "Settings"
+      "settings": "Settings",
+      "import": "Importer"
     },
     "dashboard": {
       "title": "Financial summary",
@@ -389,6 +390,128 @@
         "receivedOk": "{count, plural, =0 {Lot marked as received.} one {Received. # piece moved to inventory.} other {Received. # pieces moved to inventory.}}",
         "receivedFailed": "Couldn't change the status.",
         "pieces": "Lot pieces"
+      }
+    },
+    "import": {
+      "title": "Importer",
+      "description": "Upload the weekly spreadsheet and the system creates the lots, the items and the cost allocation.",
+      "back": "Back",
+      "cancel": "Cancel",
+      "confirmRevert": "Yes, undo",
+      "reverted": "{items, plural, one {# item was undone} other {# items were undone}}.",
+      "templateSaved": "Template saved. Next week there is nothing to map.",
+      "steps": {
+        "upload": "Upload",
+        "map": "Map",
+        "validate": "Validate",
+        "confirm": "Confirm"
+      },
+      "upload": {
+        "title": "Upload the file",
+        "hint": "Excel and CSV. A title or blank rows on top are fine: the header row is found on its own.",
+        "pick": "Choose file",
+        "working": "Reading the file…",
+        "formats": ".xlsx, .xls or .csv, up to 20 MB",
+        "template": "Download the 27-column template"
+      },
+      "map": {
+        "title": "Check the mapping",
+        "hint": "This is what each column was understood to be. Fix what you need and save it as a template: next week there will be nothing to map.",
+        "truncated": "The file was larger than the cap and only the first 5,000 rows were read.",
+        "ignore": "— Do not import —",
+        "noSample": "(no sample)",
+        "fieldFor": "Field for the {header} column",
+        "saveAs": "Save this mapping as a template",
+        "savePlaceholder": "Weekly Alt spreadsheet",
+        "save": "Save",
+        "next": "Validate"
+      },
+      "validate": {
+        "ambiguous": "Some values can be read two ways, and guessing wrong would change the amounts. Choose how they are read.",
+        "numberSamples": "Numbers like {samples}.",
+        "dateSamples": "Dates like {samples}.",
+        "decimalEs": "1.234,56 (Venezuelan)",
+        "decimalUs": "1,234.56 (US)",
+        "dateDmy": "day/month/year",
+        "dateMdy": "month/day/year",
+        "reread": "Read again",
+        "toCreate": "To create",
+        "toUpdate": "To update",
+        "skipped": "Skipped",
+        "errors": "With errors",
+        "lots": "Lots",
+        "row": "Row {n}",
+        "noName": "(no name)",
+        "matches": "Matches {sku}, already in inventory.",
+        "exclude": "Skip",
+        "update": "Update",
+        "confirm": "Confirm import"
+      },
+      "state": {
+        "new": "New",
+        "update_existing": "Updates",
+        "duplicate_in_file": "Repeated in file",
+        "duplicate_in_db": "Already exists",
+        "error": "Error"
+      },
+      "report": {
+        "title": "Done",
+        "hint": "The items are in inventory with their cost allocated.",
+        "created": "Items created",
+        "updated": "Updated",
+        "lots": "Purchase lots",
+        "invested": "Invested",
+        "goInventory": "Go to inventory",
+        "revert": "Undo this batch"
+      },
+      "history": {
+        "title": "Recent imports",
+        "hint": "A batch can be undone for {days} days, as long as none of its items has been sold, published or photographed.",
+        "noName": "(no name)",
+        "counts": "{created} created · {updated} updated · {skipped} skipped · {errors} with errors"
+      },
+      "batchStatus": {
+        "previewed": "Not confirmed",
+        "committed": "Confirmed",
+        "reverted": "Undone"
+      },
+      "fields": {
+        "purchasedAt": "Purchase date",
+        "platform": "Platform",
+        "reference": "Auction reference",
+        "type": "Item type",
+        "category": "Category",
+        "sportOrGame": "Sport or game",
+        "playerOrCharacter": "Player or character",
+        "brand": "Brand",
+        "setName": "Set",
+        "year": "Year",
+        "cardNumber": "Number",
+        "variant": "Variant",
+        "serialNumbered": "Serial",
+        "gradingCompany": "Grading company",
+        "grade": "Grade",
+        "certNumber": "Cert",
+        "rawCondition": "Raw condition",
+        "quantity": "Quantity",
+        "hammerPrice": "Hammer (USD)",
+        "buyerPremium": "Buyer premium",
+        "cardFeePct": "Card fee (%)",
+        "shippingIntl": "Shipping (USD)",
+        "courierVe": "Courier Venezuela",
+        "customsVe": "Customs",
+        "marketValue": "Market value",
+        "received": "Received",
+        "location": "Location",
+        "notes": "Notes"
+      },
+      "errors": {
+        "FORBIDDEN": "Your role cannot upload files to the importer.",
+        "NO_HEADER_ROW": "No header row was found. Check that the table has at least three recognizable columns.",
+        "UNREADABLE": "The file could not be read.",
+        "DUPLICATE_NAME": "There is already a template with that name.",
+        "SAVE_FAILED": "The template could not be saved.",
+        "REVERT_BLOCKED": "This batch cannot be undone."
       }
     },
     "accounts": {

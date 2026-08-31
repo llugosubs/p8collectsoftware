@@ -5,6 +5,97 @@ Formato: una entrada por fase. Ver las fases en la sección 11 del
 
 ---
 
+## Fase 2 · Entrega C — Importador semanal de Excel · 31 de agosto de 2026
+
+El módulo que más cambia el día a día: el dueño arma su tabla en Excel, la sube, y el
+sistema crea los lotes, las piezas y el prorrateo sin cargar nada a mano.
+
+### Los dos idiomas del archivo
+
+`1.234` significa **mil doscientos treinta y cuatro** en Venezuela y **uno coma doscientos
+treinta y cuatro** en Estados Unidos. Adivinar mal multiplica un precio por mil, y ese
+precio entra al costo de una carta que después se vende.
+
+`08/09/2026` tiene el mismo problema con otra cara: 8 de septiembre aquí, 9 de agosto allá.
+Una fecha de compra movida un mes descuadra el corte contable y el aging del inventario, y
+nadie lo nota porque la fecha SÍ existe — no revienta nada.
+
+La regla, en los dos casos, es no adivinar nunca celda por celda. La convención se deduce
+mirando el **archivo completo**: basta un solo valor inequívoco —un `1.234,56`, un día
+mayor que doce— para resolverlo todo. Si no hay ninguno, se **pregunta** antes de confirmar.
+
+Un Excel lo escribe una sola persona con un solo teclado, así que un valor inequívoco en la
+columna de la aduana resuelve también la del martillo. Deducir columna por columna daría
+menos evidencia y preguntaría más veces por lo mismo.
+
+### Confirmar es todo o nada, y se puede deshacer
+
+`commit_import_batch` no inventa un camino de escritura: llama a `create_acquisition`, la
+misma función del wizard de Compras, una vez por grupo de filas. **Tres módulos que crean
+inventario con costo por un solo camino.**
+
+Lo único que hace de más es enlazar cada fila del archivo con la pieza que produjo, y lo
+hace **dentro de la misma transacción**. Si ese enlace se escribiera después, un fallo entre
+las dos escrituras dejaría cientos de items creados sin registro de cuáles son: un lote
+irreversible, que es justo lo que la reversión promete que no pasa.
+
+Revertir no es un `DELETE`. Es borrado suave con guardias que se niegan si una pieza ya tomó
+vida propia: vendida, en un pedido, publicada, fotografiada, abierta en un break o con pagos
+contra su lote de compra. La guardia **no** bloquea por "lote recibido" — un lote recibido es
+el caso normal del archivo semanal, y bloquear ahí sería no tener reversión. Cuando se niega,
+lista pieza por pieza qué lo impide, todas de una vez: descubrirlas de a una, reintentando,
+es insoportable.
+
+La ventana de 7 días vive en `settings`, no clavada en el código.
+
+### Lo que la crítica del diseño destapó
+
+- **Normalizar los VALORES, no solo los encabezados.** El Excel dice "Fanatics Collect",
+  "carta graduada" y "psa"; el esquema espera `fanatics`, `graded_card` y `PSA`. Sin esa
+  capa, cada fila reventaba a mitad de la transacción con un error ilegible. Detalle fino:
+  `grading_company` es el único enum del esquema en mayúsculas.
+- **`items.category` es obligatorio y la plantilla de 27 columnas no tiene esa columna.** Se
+  deduce del deporte o juego; cuando no lo reconoce devuelve "no sé" para que el dueño elija,
+  en vez de caer en `other` en silencio y dejar la pieza en el sitio equivocado.
+- **El duplicado dentro del MISMO archivo** no lo atrapa ningún índice único, porque las dos
+  filas son nuevas. La clave del cert se arma exactamente igual que el índice de la base: si
+  se calculara distinto, el importador diría "nueva" y el insert moriría con 23505.
+- **Los errores se comprueban antes**, no en la base. Una restricción que salta dentro de la
+  transacción aborta el archivo entero y llega como un mensaje de Postgres; aquí llega como
+  "el grado 11 está fuera de 0 a 10" en la fila 7, corregible sin volver a subir nada.
+- **Un costo común ilegible bloquea su fila** en vez de valer cero. Dejarlo pasar perdería
+  plata del lote en silencio y abarataría el costo de cada carta.
+- **Un lote se da por recibido solo si TODAS sus filas llegaron.** Con una pendiente, darlo
+  por recibido pondría en el inventario disponible una carta que sigue en Estados Unidos.
+- **Las filas duplicadas y las que traen error quedan fuera del lote por completo.** Su
+  martillo no cuenta para el total y el envío se reparte solo entre las que sí entraron.
+
+### Tres enums, no dos
+
+Al estado del archivo que pide §7.12 (`previewed`, `committed`, `reverted`) se suman el de
+la **previsualización** y el del **desenlace**. "Duplicada en base" es una decisión;
+"omitida" es lo que ocurrió. Mezclarlos obligaría a borrar el motivo para escribir el
+resultado, y el motivo es lo único que explica por qué una carta que estaba en el archivo no
+está en el inventario.
+
+### Verificación
+
+- 62 tests nuevos de dominio (203 en total), incluido uno que arma un `.xlsx` como los de
+  verdad —título arriba, fila vacía, `1.234,56`, `psa` en minúscula, "Fanatics Collect", un
+  cert repetido, un grado imposible y una fila sin nombre— y lo lleva hasta el plan.
+- 17 tests pgTAP nuevos (45 en total): atomicidad del commit, idempotencia del segundo toque,
+  las guardias de la reversión y la ventana de 7 días.
+- Recorrido completo en el navegador con ese mismo archivo: 2 piezas creadas, 1 lote,
+  $1.812,56 invertidos, prorrateo cuadrado al centavo contra `acquisitions.total_cost`.
+  Reversión bloqueada con una pieza publicada, y limpia sin ella.
+
+### Pendiente de la fase
+
+La Entrega D: exportación inversa, import por foto con visión (necesita `ANTHROPIC_API_KEY`)
+y sincronización con Google Sheets (necesita OAuth de Google Cloud).
+
+---
+
 ## Fase 2 · Entrega B — Compras · 26 de agosto de 2026
 
 Wizard de cuatro pasos, listado con alerta de lotes que no llegan, y ficha del lote.

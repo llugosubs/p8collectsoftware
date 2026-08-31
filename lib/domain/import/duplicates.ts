@@ -67,7 +67,11 @@ export function lotPositionKey(keys: DuplicateKeys): string | null {
   const cardNumber = keys.cardNumber?.trim();
   if (!platform || !reference || !cardNumber) return null;
 
-  const grade = keys.grade === null || keys.grade === undefined ? "" : String(keys.grade).trim();
+  // El grado se canoniza como número: la base devuelve 10.0 y el archivo dice
+  // 10. Comparados como texto serían cartas distintas.
+  const crudo = keys.grade === null || keys.grade === undefined ? "" : String(keys.grade).trim();
+  const numero = crudo === "" ? Number.NaN : Number(crudo);
+  const grade = Number.isNaN(numero) ? crudo : String(numero);
 
   return [fold(platform), fold(reference), fold(cardNumber), grade].join("|");
 }

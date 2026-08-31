@@ -346,8 +346,10 @@ begin
   end if;
 
   if v_problems is not null and array_length(v_problems, 1) > 0 then
-    raise exception E'No se puede revertir: % impedimentos.\n%',
-      array_length(v_problems, 1),
+    -- Sin contador: en español, "1 impedimentos" delata que el mensaje lo
+    -- armó una máquina, y este mensaje se lee justo cuando alguien está
+    -- deshaciendo algo con prisa.
+    raise exception E'No se puede revertir. Esto lo impide:\n%',
       array_to_string(v_problems[1:10], E'\n')
       using errcode = 'P0001';
   end if;

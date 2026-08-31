@@ -126,7 +126,7 @@ Fases (detalle en la sección 11 del master prompt):
 | ---- | -------------------------------------------------------------------------- | --------------------------- |
 | 0    | Fundación: repo, Next.js, Supabase, Auth, roles, layouts, CI, Sentry, i18n | **hecha**                   |
 | 1    | Modelo de datos completo, RLS, tipos, seed, pgTAP                          | **hecha**                   |
-| 2    | Inventario + Compras + Importador de Excel                                 | Entrega A hecha; B en curso |
+| 2    | Inventario + Compras + Importador de Excel                                 | Entregas A, B y C hechas; D pendiente |
 | 3    | Ventas + Clientes + Tesorería + Cuentas pendientes                         | pendiente                   |
 | 4    | Tienda pública, Stripe, emails, SEO                                        | pendiente                   |
 | 5    | Dashboard + Reportes + Asistente IA                                        | pendiente                   |
