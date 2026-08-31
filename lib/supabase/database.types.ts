@@ -718,6 +718,239 @@ export type Database = {
         }
         Relationships: []
       }
+      import_batch_rows: {
+        Row: {
+          acquisition_id: string | null
+          batch_id: string
+          created_at: string
+          duplicate_of_item_id: string | null
+          error_message: string | null
+          group_key: string | null
+          id: string
+          item_id: string | null
+          mapped_data: Json | null
+          raw_data: Json
+          result: Database["public"]["Enums"]["import_row_result"] | null
+          row_number: number
+          state: Database["public"]["Enums"]["import_row_state"]
+          updated_at: string
+        }
+        Insert: {
+          acquisition_id?: string | null
+          batch_id: string
+          created_at?: string
+          duplicate_of_item_id?: string | null
+          error_message?: string | null
+          group_key?: string | null
+          id?: string
+          item_id?: string | null
+          mapped_data?: Json | null
+          raw_data: Json
+          result?: Database["public"]["Enums"]["import_row_result"] | null
+          row_number: number
+          state: Database["public"]["Enums"]["import_row_state"]
+          updated_at?: string
+        }
+        Update: {
+          acquisition_id?: string | null
+          batch_id?: string
+          created_at?: string
+          duplicate_of_item_id?: string | null
+          error_message?: string | null
+          group_key?: string | null
+          id?: string
+          item_id?: string | null
+          mapped_data?: Json | null
+          raw_data?: Json
+          result?: Database["public"]["Enums"]["import_row_result"] | null
+          row_number?: number
+          state?: Database["public"]["Enums"]["import_row_state"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batch_rows_acquisition_id_fkey"
+            columns: ["acquisition_id"]
+            isOneToOne: false
+            referencedRelation: "acquisitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_duplicate_of_item_id_fkey"
+            columns: ["duplicate_of_item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_duplicate_of_item_id_fkey"
+            columns: ["duplicate_of_item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_duplicate_of_item_id_fkey"
+            columns: ["duplicate_of_item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_costs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_deleted"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "import_batch_rows_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_costs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_batches: {
+        Row: {
+          committed_at: string | null
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          file_name: string | null
+          file_url: string | null
+          header_row: number | null
+          id: string
+          reverted_at: string | null
+          reverted_by: string | null
+          rows_created: number
+          rows_error: number
+          rows_skipped: number
+          rows_total: number
+          rows_updated: number
+          sheet_name: string | null
+          status: Database["public"]["Enums"]["import_batch_status"]
+          summary: Json
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          committed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          header_row?: number | null
+          id?: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          rows_created?: number
+          rows_error?: number
+          rows_skipped?: number
+          rows_total?: number
+          rows_updated?: number
+          sheet_name?: string | null
+          status?: Database["public"]["Enums"]["import_batch_status"]
+          summary?: Json
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          committed_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          header_row?: number | null
+          id?: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          rows_created?: number
+          rows_error?: number
+          rows_skipped?: number
+          rows_total?: number
+          rows_updated?: number
+          sheet_name?: string | null
+          status?: Database["public"]["Enums"]["import_batch_status"]
+          summary?: Json
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "import_batches_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "import_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      import_templates: {
+        Row: {
+          column_mapping: Json
+          created_at: string
+          created_by: string | null
+          decimal_convention: string | null
+          default_platform:
+            | Database["public"]["Enums"]["acquisition_platform"]
+            | null
+          deleted_at: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          column_mapping: Json
+          created_at?: string
+          created_by?: string | null
+          decimal_convention?: string | null
+          default_platform?:
+            | Database["public"]["Enums"]["acquisition_platform"]
+            | null
+          deleted_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          column_mapping?: Json
+          created_at?: string
+          created_by?: string | null
+          decimal_convention?: string | null
+          default_platform?:
+            | Database["public"]["Enums"]["acquisition_platform"]
+            | null
+          deleted_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       item_costs: {
         Row: {
           allocated_cost: number
@@ -1839,6 +2072,10 @@ export type Database = {
     }
     Functions: {
       can_access_admin: { Args: never; Returns: boolean }
+      commit_import_batch: {
+        Args: { p_batch_id: string; p_payload: Json }
+        Returns: Json
+      }
       create_acquisition: { Args: { p_payload: Json }; Returns: Json }
       current_consignor_id: { Args: never; Returns: string }
       current_fx_rate: {
@@ -1853,6 +2090,7 @@ export type Database = {
       is_staff_or_above: { Args: never; Returns: boolean }
       next_document_number: { Args: { p_prefix: string }; Returns: string }
       open_break: { Args: { p_payload: Json }; Returns: Json }
+      revert_import_batch: { Args: { p_batch_id: string }; Returns: Json }
       set_acquisition_received: {
         Args: {
           p_acquisition_id: string
@@ -1892,6 +2130,14 @@ export type Database = {
       fx_source: "bcv" | "binance" | "manual"
       grading_company: "PSA" | "BGS" | "CGC" | "SGC" | "TAG" | "none"
       image_kind: "front" | "back" | "cert" | "detail"
+      import_batch_status: "previewed" | "committed" | "reverted"
+      import_row_result: "created" | "updated" | "skipped" | "error"
+      import_row_state:
+        | "new"
+        | "duplicate_in_file"
+        | "duplicate_in_db"
+        | "update_existing"
+        | "error"
       item_category: "sports" | "tcg" | "other"
       item_status:
         | "incoming"
@@ -2124,6 +2370,15 @@ export const Constants = {
       fx_source: ["bcv", "binance", "manual"],
       grading_company: ["PSA", "BGS", "CGC", "SGC", "TAG", "none"],
       image_kind: ["front", "back", "cert", "detail"],
+      import_batch_status: ["previewed", "committed", "reverted"],
+      import_row_result: ["created", "updated", "skipped", "error"],
+      import_row_state: [
+        "new",
+        "duplicate_in_file",
+        "duplicate_in_db",
+        "update_existing",
+        "error",
+      ],
       item_category: ["sports", "tcg", "other"],
       item_status: [
         "incoming",
