@@ -370,13 +370,28 @@ function PasoSubir({
           />
         </label>
 
-        <Link
-          href="/admin/import/template.xlsx"
-          className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
-        >
-          <Download className="size-4" aria-hidden />
-          {t("upload.template")}
-        </Link>
+        <div className="space-y-2">
+          <Link
+            href="/admin/import/template.xlsx"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
+          >
+            <Download className="size-4" aria-hidden />
+            {t("upload.template")}
+          </Link>
+
+          <div>
+            <Link
+              href="/admin/import/inventory.xlsx"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 text-sm"
+            >
+              <Download className="size-4" aria-hidden />
+              {t("upload.roundtrip")}
+            </Link>
+            <p className="text-muted-foreground/70 pl-[1.375rem] text-xs">
+              {t("upload.roundtripHint")}
+            </p>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

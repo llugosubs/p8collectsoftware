@@ -37,10 +37,14 @@ export type PlannedItem = {
   quantity: number;
   location: string | null;
   marketValue: string | null;
+  listPrice: string | null;
+  minPrice: string | null;
 };
 
 export type ImportRowValues = {
   rowNumber: number;
+  /** Solo lo trae un archivo que salió de este sistema. */
+  sku: string | null;
   purchasedAt: string | null;
   platform: string | null;
   reference: string | null;
@@ -146,6 +150,32 @@ const NOMBRE_COSTO: Readonly<Record<CostoComun, string>> = {
   customsVe: "la aduana",
 };
 
+/**
+ * Los montos de la pieza: valor de mercado y precios.
+ *
+ * No se reparten ni se suman, y por eso se escapaban de toda comprobación. Una
+ * celda que diga "aprox 1.200" llega intacta al `::numeric` de la transacción y
+ * la aborta ENTERA, con un error de Postgres en inglés en vez de "la fila 74
+ * tiene un valor de mercado que no es un monto".
+ */
+function montosEditables(item: PlannedItem): string[] {
+  const errores: string[] = [];
+  const campos: readonly [keyof PlannedItem, string][] = [
+    ["marketValue", "El valor de mercado"],
+    ["listPrice", "El precio de lista"],
+    ["minPrice", "El precio mínimo"],
+  ];
+
+  for (const [campo, nombre] of campos) {
+    const valor = item[campo];
+    if (typeof valor === "string" && valor !== "" && !DECIMAL_TEXTO.test(valor)) {
+      errores.push(`${nombre} "${valor}" no es un monto.`);
+    }
+  }
+
+  return errores;
+}
+
 function mayuscula(texto: string): string {
   return texto.charAt(0).toUpperCase() + texto.slice(1);
 }
@@ -165,6 +195,14 @@ export function validateRow(row: ImportRowValues): string[] {
   const errores: string[] = [];
   const item = row.item;
 
+  // Una fila CON SKU es una corrección sobre una pieza existente, no una
+  // compra. No se le exige nada de lo que exige una fila nueva —ni plataforma,
+  // ni fecha, ni martillo— porque nada de eso se vuelve a escribir.
+  if (row.sku !== null && row.sku.trim() !== "") {
+    errores.push(...montosEditables(item));
+    return errores;
+  }
+
   // El nombre: de una carta es el jugador o el personaje; de una caja sellada,
   // el set. Exigir siempre "jugador" rechazaría cajas perfectamente válidas.
   if (!item.playerOrCharacter && !item.setName) {
@@ -183,14 +221,7 @@ export function validateRow(row: ImportRowValues): string[] {
     errores.push(`El martillo "${row.hammerPrice}" no cabe en un monto de hasta 4 decimales.`);
   }
 
-  // El valor de mercado también es un monto, y es el único que no se reparte
-  // ni se suma: por eso se escapaba. Una celda que diga "aprox 1.200" llega
-  // intacta al `::numeric` de la transacción y la aborta ENTERA, con un error
-  // de Postgres en inglés en vez de "la fila 74 tiene un valor de mercado que
-  // no es un número".
-  if (item.marketValue !== null && !DECIMAL_TEXTO.test(item.marketValue)) {
-    errores.push(`El valor de mercado "${item.marketValue}" no es un monto.`);
-  }
+  errores.push(...montosEditables(item));
 
   // Los costos comunes viajan en la fila que los trae. Si uno llegó ilegible,
   // el error es de ESTA fila: dejarlo pasar como cero perdería plata del lote
@@ -205,6 +236,17 @@ export function validateRow(row: ImportRowValues): string[] {
 
   if (item.grade !== null && (item.grade < 0 || item.grade > 10)) {
     errores.push(`El grado ${item.grade} está fuera de 0 a 10.`);
+  }
+
+  // Una gradadora que no se reconoce llega aquí como cadena vacía, y eso solo
+  // puede significar una cosa: la celda TRAÍA texto y no lo entendimos —una
+  // celda vacía se normaliza a "none", no a "".
+  //
+  // Sin esta comprobación, un "PSAA" mal tecleado entra a la base como carta
+  // SIN GRADAR con grado 10: un slab PSA 10 archivado como carta suelta, que
+  // nadie descubre hasta que va a venderlo.
+  if (item.gradingCompany === "") {
+    errores.push("No se reconoce la gradadora. Usa PSA, BGS, CGC, SGC, TAG o déjala vacía.");
   }
 
   // La base lo exige (items_graded_needs_grade) y sin esto reventaría dentro
@@ -273,8 +315,17 @@ export function buildImportPlan(input: {
 
     if (veredicto.kind !== "new") {
       // Actualizar solo tiene sentido contra una pieza que existe de verdad.
+      // Coincidir por SKU no es parecerse: es ser la misma pieza. Una fila así
+      // salió de nuestra propia exportación, y el dueño la bajó justamente
+      // para editarla — así que ACTUALIZAR es lo que pidió, no algo que haya
+      // que ir marcando doscientas veces. Las otras dos coincidencias son
+      // heurísticas y siguen empezando en "omitir".
+      const porSku =
+        veredicto.kind === "duplicate_in_db" && veredicto.matchedBy === "sku";
+
       const quiereActualizar =
-        aActualizar.has(row.rowNumber) && veredicto.kind === "duplicate_in_db";
+        veredicto.kind === "duplicate_in_db" &&
+        (aActualizar.has(row.rowNumber) || (porSku && !excluidas.has(row.rowNumber)));
 
       if (
         quiereActualizar &&

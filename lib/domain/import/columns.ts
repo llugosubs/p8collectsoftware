@@ -14,6 +14,10 @@ import { fold } from "./normalize";
  */
 
 export const IMPORT_FIELDS = [
+  // El SKU no es un dato de la carta: es su identidad. Solo aparece en un
+  // archivo que salió de este sistema, y es lo que convierte la ida y vuelta
+  // por Excel en una ACTUALIZACIÓN en vez de una compra inventada.
+  "sku",
   "purchasedAt",
   "platform",
   "reference",
@@ -39,6 +43,8 @@ export const IMPORT_FIELDS = [
   "courierVe",
   "customsVe",
   "marketValue",
+  "listPrice",
+  "minPrice",
   "received",
   "location",
   "notes",
@@ -48,6 +54,7 @@ export type ImportField = (typeof IMPORT_FIELDS)[number];
 
 /** Sinónimos por campo, en español e inglés. El primero es el de la plantilla. */
 const SINONIMOS: Readonly<Record<ImportField, readonly string[]>> = {
+  sku: ["sku", "codigo", "codigo p8", "id", "identificador", "referencia p8"],
   purchasedAt: ["fecha compra", "fecha de compra", "fecha", "purchase date", "date", "comprado"],
   platform: ["plataforma", "platform", "casa", "fuente", "source", "marketplace"],
   reference: [
@@ -109,6 +116,8 @@ const SINONIMOS: Readonly<Record<ImportField, readonly string[]>> = {
     "comp",
     "comps",
   ],
+  listPrice: ["precio lista", "precio de lista", "list price", "precio venta", "pvp"],
+  minPrice: ["precio minimo", "min price", "minimum price", "piso", "precio piso"],
   received: ["recibido", "received", "en mano", "in hand", "llego"],
   location: ["ubicacion", "location", "donde", "bodega", "vault"],
   notes: ["notas", "nota", "notes", "note", "comentarios", "comments", "observaciones"],

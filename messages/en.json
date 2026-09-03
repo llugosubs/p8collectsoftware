@@ -412,7 +412,9 @@
         "pick": "Choose file",
         "working": "Reading the file…",
         "formats": ".xlsx, .xls or .csv, up to 20 MB",
-        "template": "Download the 27-column template"
+        "template": "Download the 27-column template",
+        "roundtrip": "Download inventory to edit in Excel",
+        "roundtripHint": "Every row carries its SKU: re-uploading updates the item instead of creating a lot."
       },
       "map": {
         "title": "Check the mapping",
@@ -480,6 +482,7 @@
         "reverted": "Undone"
       },
       "fields": {
+        "sku": "SKU (existing item)",
         "purchasedAt": "Purchase date",
         "platform": "Platform",
         "reference": "Auction reference",
@@ -507,7 +510,9 @@
         "marketValue": "Market value",
         "received": "Received",
         "location": "Location",
-        "notes": "Notes"
+        "notes": "Notes",
+        "listPrice": "List price",
+        "minPrice": "Minimum price"
       },
       "errors": {
         "FORBIDDEN": "Your role cannot upload files to the importer.",

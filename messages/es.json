@@ -412,7 +412,9 @@
         "pick": "Elegir archivo",
         "working": "Leyendo el archivo…",
         "formats": ".xlsx, .xls o .csv, hasta 20 MB",
-        "template": "Descargar la plantilla con las 27 columnas"
+        "template": "Descargar la plantilla con las 27 columnas",
+        "roundtrip": "Bajar el inventario para editarlo en Excel",
+        "roundtripHint": "Cada fila trae su SKU: al volver a subirla, se actualiza la pieza en vez de crear un lote."
       },
       "map": {
         "title": "Revisa el mapeo",
@@ -480,6 +482,7 @@
         "reverted": "Deshecho"
       },
       "fields": {
+        "sku": "SKU (pieza existente)",
         "purchasedAt": "Fecha de compra",
         "platform": "Plataforma",
         "reference": "Referencia de subasta",
@@ -507,7 +510,9 @@
         "marketValue": "Valor de mercado",
         "received": "Recibido",
         "location": "Ubicación",
-        "notes": "Notas"
+        "notes": "Notas",
+        "listPrice": "Precio de lista",
+        "minPrice": "Precio mínimo"
       },
       "errors": {
         "FORBIDDEN": "Tu rol no puede subir archivos al importador.",

@@ -20,10 +20,12 @@ import { fold } from "./normalize";
  * aparecería a mitad de la transacción, con quince cartas ya escritas.
  */
 
-export type MatchKind = "cert" | "lot_position";
+export type MatchKind = "sku" | "cert" | "lot_position";
 
 /** Lo que hace falta de una fila —o de un item ya guardado— para compararla. */
 export type DuplicateKeys = {
+  /** Solo lo trae un archivo que salió de este sistema. */
+  sku?: string | null;
   gradingCompany: string | null;
   certNumber: string | null;
   platform: string | null;
@@ -51,6 +53,20 @@ export type DuplicateVerdict =
       sku: string;
       status?: string | null;
     };
+
+/**
+ * La clave del SKU.
+ *
+ * Es la única coincidencia que no es una heurística: un SKU solo puede haber
+ * salido de este sistema, así que no hay nada que interpretar. Por eso gana
+ * sobre el cert y sobre la posición en el lote, y por eso una fila que coincide
+ * por SKU se marca para ACTUALIZAR y no para omitir — es exactamente lo que el
+ * dueño quiso al bajar el inventario, editarlo en Excel y volverlo a subir.
+ */
+export function skuKey(keys: DuplicateKeys): string | null {
+  const sku = keys.sku?.trim();
+  return sku ? sku.toUpperCase() : null;
+}
 
 /**
  * La clave del cert, idéntica a la del índice único de la base.
@@ -101,37 +117,58 @@ export function findDuplicates(
   rows: readonly ImportRowKeys[],
   existing: readonly ExistingItem[],
 ): Map<number, DuplicateVerdict> {
+  const skuEnBase = new Map<string, ExistingItem>();
   const certEnBase = new Map<string, ExistingItem>();
   const loteEnBase = new Map<string, ExistingItem>();
 
   for (const item of existing) {
+    const sku = skuKey(item);
+    if (sku !== null && !skuEnBase.has(sku)) skuEnBase.set(sku, item);
     const cert = certKey(item);
     if (cert !== null && !certEnBase.has(cert)) certEnBase.set(cert, item);
     const lote = lotPositionKey(item);
     if (lote !== null && !loteEnBase.has(lote)) loteEnBase.set(lote, item);
   }
 
+  const skuEnArchivo = new Map<string, number>();
   const certEnArchivo = new Map<string, number>();
   const loteEnArchivo = new Map<string, number>();
   const veredictos = new Map<number, DuplicateVerdict>();
 
   for (const row of rows) {
+    const sku = skuKey(row);
     const cert = certKey(row);
     const lote = lotPositionKey(row);
 
+    // El SKU manda: es identidad, no parecido.
     const enBase =
+      (sku !== null ? skuEnBase.get(sku) : undefined) ??
       (cert !== null ? certEnBase.get(cert) : undefined) ??
       (lote !== null ? loteEnBase.get(lote) : undefined);
 
     if (enBase !== undefined) {
       const matchedBy: MatchKind =
-        cert !== null && certEnBase.has(cert) ? "cert" : "lot_position";
+        sku !== null && skuEnBase.has(sku)
+          ? "sku"
+          : cert !== null && certEnBase.has(cert)
+            ? "cert"
+            : "lot_position";
       veredictos.set(row.rowNumber, {
         kind: "duplicate_in_db",
         matchedBy,
         itemId: enBase.id,
         sku: enBase.sku,
         status: enBase.status ?? null,
+      });
+      continue;
+    }
+
+    const antesSku = sku !== null ? skuEnArchivo.get(sku) : undefined;
+    if (antesSku !== undefined) {
+      veredictos.set(row.rowNumber, {
+        kind: "duplicate_in_file",
+        matchedBy: "sku",
+        firstRowNumber: antesSku,
       });
       continue;
     }
@@ -156,6 +193,7 @@ export function findDuplicates(
       continue;
     }
 
+    if (sku !== null) skuEnArchivo.set(sku, row.rowNumber);
     if (cert !== null) certEnArchivo.set(cert, row.rowNumber);
     if (lote !== null) loteEnArchivo.set(lote, row.rowNumber);
     veredictos.set(row.rowNumber, { kind: "new" });
@@ -172,18 +210,22 @@ export function findDuplicates(
  * cargar las cartas a mano.
  */
 export function lookupKeys(rows: readonly ImportRowKeys[]): {
+  skus: string[];
   certNumbers: string[];
   references: string[];
 } {
+  const skus = new Set<string>();
   const certs = new Set<string>();
   const referencias = new Set<string>();
 
   for (const row of rows) {
+    const sku = row.sku?.trim();
+    if (sku) skus.add(sku);
     const cert = row.certNumber?.trim();
     if (cert) certs.add(cert);
     const referencia = row.reference?.trim();
     if (referencia) referencias.add(referencia);
   }
 
-  return { certNumbers: [...certs], references: [...referencias] };
+  return { skus: [...skus], certNumbers: [...certs], references: [...referencias] };
 }

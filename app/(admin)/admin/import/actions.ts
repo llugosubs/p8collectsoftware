@@ -143,8 +143,32 @@ export async function analyzeImportFile(input: unknown): Promise<AnalyzeResult> 
 /** Las piezas del inventario que podrían ser las mismas que trae el archivo. */
 async function buscarCandidatas(claves: readonly ImportRowKeys[]): Promise<ExistingItem[]> {
   const supabase = await createClient();
-  const { certNumbers, references } = lookupKeys(claves);
+  const { skus, certNumbers, references } = lookupKeys(claves);
   const encontradas = new Map<string, ExistingItem>();
+
+  // El SKU primero: es identidad, no parecido. Un archivo que trae SKU salió
+  // de nuestra propia exportación y el dueño lo bajó para editarlo.
+  if (skus.length > 0) {
+    const { data } = await supabase
+      .from("items")
+      .select("id, sku, grading_company, cert_number, card_number, grade, status")
+      .is("deleted_at", null)
+      .in("sku", skus);
+
+    for (const fila of data ?? []) {
+      encontradas.set(fila.id, {
+        id: fila.id,
+        sku: fila.sku,
+        gradingCompany: fila.grading_company,
+        certNumber: fila.cert_number,
+        platform: null,
+        reference: null,
+        cardNumber: fila.card_number,
+        grade: fila.grade,
+        status: fila.status,
+      });
+    }
+  }
 
   if (certNumbers.length > 0) {
     const { data } = await supabase
@@ -238,6 +262,7 @@ async function leerYPlanear(input: z.infer<typeof lecturaSchema>): Promise<
 
     const claves: ImportRowKeys[] = leidas.rows.map((r) => ({
       rowNumber: r.rowNumber,
+      sku: r.sku,
       gradingCompany: r.item.gradingCompany,
       certNumber: r.item.certNumber,
       platform: r.platform,
@@ -414,6 +439,8 @@ export async function commitImport(input: unknown): Promise<CommitResult> {
           quantity: l.item.quantity,
           location: l.item.location,
           market_value: l.item.marketValue,
+          list_price: l.item.listPrice,
+          min_price: l.item.minPrice,
         },
       })),
     })),
@@ -426,6 +453,8 @@ export async function commitImport(input: unknown): Promise<CommitResult> {
           item_id: r.duplicateOfItemId,
           patch: {
             market_value: fila?.item.marketValue ?? null,
+            list_price: fila?.item.listPrice ?? null,
+            min_price: fila?.item.minPrice ?? null,
             location: fila?.item.location ?? null,
             status: fila?.received === true ? "in_stock" : null,
           },

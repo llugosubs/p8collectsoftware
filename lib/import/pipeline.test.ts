@@ -224,3 +224,100 @@ describe("el grado no decide cómo se lee el dinero", () => {
     expect(leidas.rows[0]?.item.grade).toBe(9.5);
   });
 });
+
+/**
+ * La ida y vuelta: el inventario bajado a Excel, editado, y subido otra vez.
+ *
+ * La primera columna es el SKU, y eso lo cambia todo: la fila no es una compra,
+ * es una corrección sobre una pieza que ya existe.
+ */
+function inventarioExportado(): ArrayBuffer {
+  const hoja = XLSX.utils.aoa_to_sheet([
+    ["sku", "jugador_o_personaje", "set", "gradadora", "grado", "cert", "estado",
+     "valor_mercado_usd", "precio_lista_usd", "ubicacion", "recibido"],
+    ["P8-2026-0007", "Victor Wembanyama", "Prizm", "PSA", "10", "118442901", "in_stock",
+     "2.150,00", "2.400,00", "Caja B", "sí"],
+    ["P8-2026-0008", "Monkey D. Luffy", "OP-05", "PSA", "9.5", "118442902", "in_stock",
+     "410,00", "", "Caja B", "sí"],
+  ]);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, "Inventario");
+  return XLSX.write(libro, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+}
+
+function correrRoundTrip(estadoDe0007 = "in_stock") {
+  const grid = readSheet(inventarioExportado());
+  const encabezados = findHeaderRow(textRows(grid))!;
+  const leidas = readRows(
+    grid,
+    encabezados.index,
+    mappingFromMatches(matchColumns(encabezados.headers)),
+  );
+
+  const claves: ImportRowKeys[] = leidas.rows.map((r) => ({
+    rowNumber: r.rowNumber,
+    sku: r.sku,
+    gradingCompany: r.item.gradingCompany,
+    certNumber: r.item.certNumber,
+    platform: r.platform,
+    reference: r.reference,
+    cardNumber: r.item.cardNumber,
+    grade: r.item.grade,
+  }));
+
+  const enBase = [
+    { id: "i7", sku: "P8-2026-0007", status: estadoDe0007, ...vacio },
+    { id: "i8", sku: "P8-2026-0008", status: "in_stock", ...vacio },
+  ];
+
+  const plan = buildImportPlan({ rows: leidas.rows, duplicates: findDuplicates(claves, enBase) });
+  return { leidas, plan };
+}
+
+const vacio = {
+  gradingCompany: null,
+  certNumber: null,
+  platform: null,
+  reference: null,
+  cardNumber: null,
+  grade: null,
+};
+
+describe("la ida y vuelta por Excel", () => {
+  it("una fila con SKU se marca para ACTUALIZAR sola", () => {
+    // Es lo que el dueño pidió al bajar el inventario para editarlo. Obligarlo
+    // a marcar doscientas casillas sería no haber entendido para qué lo bajó.
+    const { plan } = correrRoundTrip();
+    expect(plan.rows.map((r) => r.state)).toEqual(["update_existing", "update_existing"]);
+    expect(plan.totals.rowsToUpdate).toBe(2);
+  });
+
+  it("no crea ningún lote de compra", () => {
+    // Es el punto entero: reimportar el inventario con forma de compra
+    // inventaría lotes y volvería a cargar un costo que ya se pagó.
+    const { plan } = correrRoundTrip();
+    expect(plan.groups).toEqual([]);
+    expect(plan.totals.rowsToCreate).toBe(0);
+  });
+
+  it("no le exige plataforma, fecha ni martillo a una fila con SKU", () => {
+    // Una corrección no es una compra: nada de eso se vuelve a escribir.
+    const { plan } = correrRoundTrip();
+    expect(plan.rows.flatMap((r) => r.errors)).toEqual([]);
+  });
+
+  it("lee los montos editados a la venezolana", () => {
+    const { leidas } = correrRoundTrip();
+    expect(leidas.rows[0]?.item.marketValue).toBe("2150");
+    expect(leidas.rows[1]?.item.marketValue).toBe("410");
+  });
+
+  it("se niega a actualizar una pieza que ya se vendió", () => {
+    const { plan } = correrRoundTrip("sold");
+    const fila = plan.rows.find((r) => r.rowNumber === 2)!;
+    expect(fila.state).toBe("error");
+    expect(fila.errors[0]).toMatch(/ya no está en el inventario/);
+    // Y la otra fila del archivo se importa igual.
+    expect(plan.rows.find((r) => r.rowNumber === 3)?.state).toBe("update_existing");
+  });
+});

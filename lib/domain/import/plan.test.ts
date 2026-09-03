@@ -29,6 +29,8 @@ const itemBase: PlannedItem = {
   quantity: 1,
   location: null,
   marketValue: null,
+  listPrice: null,
+  minPrice: null,
 };
 
 function fila(
@@ -38,6 +40,7 @@ function fila(
 ): ImportRowValues {
   return {
     rowNumber,
+    sku: null,
     purchasedAt: "2026-08-14",
     platform: "alt",
     reference: "ALT-33",
@@ -91,6 +94,19 @@ describe("errores que bloquean una fila", () => {
     // el archivo entero con las filas anteriores ya escritas.
     const e = validateRow(fila(4, {}, { gradingCompany: "BGS", grade: null }));
     expect(e.some((m) => /BGS.*grado/.test(m))).toBe(true);
+  });
+
+  it("una gradadora mal tecleada bloquea en vez de volverse 'sin gradar'", () => {
+    // Sin esto, un "PSAA" entra a la base como carta SIN GRADAR con grado 10:
+    // un slab PSA 10 archivado como carta suelta, que nadie descubre hasta que
+    // va a venderlo.
+    const e = validateRow(fila(4, {}, { gradingCompany: "" }));
+    expect(e.some((m) => /No se reconoce la gradadora/.test(m))).toBe(true);
+
+    // Y una celda vacía de verdad significa "sin gradar", que sí es válido.
+    expect(
+      validateRow(fila(4, {}, { gradingCompany: "none", grade: null })),
+    ).toEqual([]);
   });
 
   it("una carta con cantidad mayor que uno bloquea", () => {

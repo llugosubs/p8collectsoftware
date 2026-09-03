@@ -77,6 +77,8 @@ const CAMPOS_NUMERICOS: readonly ImportField[] = [
   "courierVe",
   "customsVe",
   "marketValue",
+  "listPrice",
+  "minPrice",
 ];
 
 function celda(fila: readonly Cell[], mapping: ColumnMapping, field: ImportField): Cell | null {
@@ -230,12 +232,15 @@ export function readRows(
         quantity: entero(fila, mapping, "quantity") ?? 1,
         location: texto(fila, mapping, "location"),
         marketValue: monto(fila, mapping, "marketValue", decimalConvention),
+        listPrice: monto(fila, mapping, "listPrice", decimalConvention),
+        minPrice: monto(fila, mapping, "minPrice", decimalConvention),
       };
 
       return {
         // El número de fila del archivo, 1-based: es el que se ve en Excel
         // cuando el dueño va a corregir la celda.
         rowNumber: index + 1,
+        sku: texto(fila, mapping, "sku"),
         purchasedAt: fecha(fila, mapping, dateConvention),
         platform: normalizePlatform(texto(fila, mapping, "platform")),
         reference: texto(fila, mapping, "reference"),
