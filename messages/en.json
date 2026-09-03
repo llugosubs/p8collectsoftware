@@ -424,7 +424,11 @@
         "saveAs": "Save this mapping as a template",
         "savePlaceholder": "Weekly Alt spreadsheet",
         "save": "Save",
-        "next": "Validate"
+        "next": "Validate",
+        "useTemplate": "Use a saved template",
+        "useTemplatePick": "— Pick a template —",
+        "templateApplied": "Applied the {name} template.",
+        "templateMissing": "The template expected columns this file does not have: {headers}. Check the mapping before continuing."
       },
       "validate": {
         "ambiguous": "Some values can be read two ways, and guessing wrong would change the amounts. Choose how they are read.",

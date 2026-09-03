@@ -424,7 +424,11 @@
         "saveAs": "Guardar este mapeo como plantilla",
         "savePlaceholder": "Excel Alt semanal",
         "save": "Guardar",
-        "next": "Validar"
+        "next": "Validar",
+        "useTemplate": "Usar una plantilla guardada",
+        "useTemplatePick": "— Elegir plantilla —",
+        "templateApplied": "Se aplicó la plantilla {name}.",
+        "templateMissing": "La plantilla esperaba columnas que este archivo no trae: {headers}. Revisa el mapeo antes de seguir."
       },
       "validate": {
         "ambiguous": "Hay valores que se pueden leer de dos maneras y adivinar mal cambiaría los montos. Elige cómo se leen.",

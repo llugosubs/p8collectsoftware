@@ -115,6 +115,16 @@ export type ImportPlan = {
   warnings: string[];
 };
 
+/**
+ * Estados sobre los que una hoja de cálculo puede escribir.
+ *
+ * Fuera de estos, la pieza ya salió del inventario —vendida, reservada,
+ * consumida en un break, perdida— y la hoja es lo que está viejo, no la carta.
+ * La base también lo impide, pero allá el error aborta el archivo entero: aquí
+ * la fila se marca antes de confirmar y el resto se importa igual.
+ */
+const ESTADOS_ACTUALIZABLES = new Set(["incoming", "in_stock", "listed"]);
+
 const GRADED_COMPANIES = new Set(["PSA", "BGS", "CGC", "SGC", "TAG"]);
 const BULK_TYPES = new Set(["sealed_box", "sealed_pack", "supply", "lot"]);
 
@@ -171,6 +181,15 @@ export function validateRow(row: ImportRowValues): string[] {
     errores.push("El precio de martillo no es un número.");
   } else if (!DECIMAL_TEXTO.test(row.hammerPrice)) {
     errores.push(`El martillo "${row.hammerPrice}" no cabe en un monto de hasta 4 decimales.`);
+  }
+
+  // El valor de mercado también es un monto, y es el único que no se reparte
+  // ni se suma: por eso se escapaba. Una celda que diga "aprox 1.200" llega
+  // intacta al `::numeric` de la transacción y la aborta ENTERA, con un error
+  // de Postgres en inglés en vez de "la fila 74 tiene un valor de mercado que
+  // no es un número".
+  if (item.marketValue !== null && !DECIMAL_TEXTO.test(item.marketValue)) {
+    errores.push(`El valor de mercado "${item.marketValue}" no es un monto.`);
   }
 
   // Los costos comunes viajan en la fila que los trae. Si uno llegó ilegible,
@@ -254,13 +273,31 @@ export function buildImportPlan(input: {
 
     if (veredicto.kind !== "new") {
       // Actualizar solo tiene sentido contra una pieza que existe de verdad.
-      const state: RowState =
-        aActualizar.has(row.rowNumber) && veredicto.kind === "duplicate_in_db"
-          ? "update_existing"
-          : veredicto.kind;
+      const quiereActualizar =
+        aActualizar.has(row.rowNumber) && veredicto.kind === "duplicate_in_db";
+
+      if (
+        quiereActualizar &&
+        veredicto.kind === "duplicate_in_db" &&
+        veredicto.status != null &&
+        !ESTADOS_ACTUALIZABLES.has(veredicto.status)
+      ) {
+        planeadas.push({
+          rowNumber: row.rowNumber,
+          state: "error",
+          errors: [
+            `${veredicto.sku} ya no está en el inventario (${veredicto.status}). ` +
+              "El archivo viene desactualizado: quita esta fila o corrige la pieza a mano.",
+          ],
+          groupKey,
+          duplicateOfItemId,
+        });
+        continue;
+      }
+
       planeadas.push({
         rowNumber: row.rowNumber,
-        state,
+        state: quiereActualizar ? "update_existing" : veredicto.kind,
         errors: [],
         groupKey,
         duplicateOfItemId,

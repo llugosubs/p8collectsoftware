@@ -30,7 +30,21 @@ import { createClient } from "@/lib/supabase/server";
 
 const campoSchema = z.enum(IMPORT_FIELDS);
 
+/**
+ * El mapeo de TRABAJO va por índice de columna: es lo que la hoja abierta tiene
+ * delante en este momento, y `readRows` lee por posición.
+ */
 const mappingSchema = z.record(z.string().regex(/^\d+$/), campoSchema);
+
+/**
+ * El mapeo GUARDADO va por encabezado, nunca por posición.
+ *
+ * Una plantilla existe para reusarse la semana siguiente. Basta que el dueño
+ * inserte una columna para que un mapeo posicional lea la aduana donde está el
+ * valor de mercado: dos montos válidos, ninguna restricción que salte, y el
+ * error aparece meses después en un margen que no cuadra.
+ */
+const mappingPorEncabezadoSchema = z.record(z.string().min(1).max(200), campoSchema);
 
 const lecturaSchema = z.object({
   storagePath: z.string().min(1).max(400),
@@ -135,7 +149,7 @@ async function buscarCandidatas(claves: readonly ImportRowKeys[]): Promise<Exist
   if (certNumbers.length > 0) {
     const { data } = await supabase
       .from("items")
-      .select("id, sku, grading_company, cert_number, card_number, grade")
+      .select("id, sku, grading_company, cert_number, card_number, grade, status")
       .is("deleted_at", null)
       .in("cert_number", certNumbers);
 
@@ -149,6 +163,7 @@ async function buscarCandidatas(claves: readonly ImportRowKeys[]): Promise<Exist
         reference: null,
         cardNumber: fila.card_number,
         grade: fila.grade,
+        status: fila.status,
       });
     }
   }
@@ -157,7 +172,7 @@ async function buscarCandidatas(claves: readonly ImportRowKeys[]): Promise<Exist
     const { data } = await supabase
       .from("items")
       .select(
-        "id, sku, grading_company, cert_number, card_number, grade, acquisition:acquisitions!inner(platform, reference)",
+        "id, sku, grading_company, cert_number, card_number, grade, status, acquisition:acquisitions!inner(platform, reference)",
       )
       .is("deleted_at", null)
       .in("acquisition.reference", references);
@@ -173,6 +188,7 @@ async function buscarCandidatas(claves: readonly ImportRowKeys[]): Promise<Exist
         reference: acq?.reference ?? null,
         cardNumber: fila.card_number,
         grade: fila.grade,
+        status: fila.status,
       });
     }
   }
@@ -492,10 +508,48 @@ export async function revertImportBatch(batchId: string): Promise<RevertResult> 
 
 const plantillaSchema = z.object({
   name: z.string().trim().min(1).max(80),
-  mapping: mappingSchema,
+  /** { "Jugador / Personaje": "playerOrCharacter" } — por encabezado. */
+  mapping: mappingPorEncabezadoSchema,
   defaultPlatform: z.string().max(30).optional(),
   decimalConvention: z.enum(["es", "us"]).optional(),
 });
+
+export type ImportTemplate = {
+  id: string;
+  name: string;
+  mapping: Record<string, string>;
+  decimalConvention: "es" | "us" | null;
+  lastUsedAt: string | null;
+};
+
+/** Las plantillas guardadas, para el selector del paso 2. */
+export async function listImportTemplates(): Promise<ImportTemplate[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("import_templates")
+    .select("id, name, column_mapping, decimal_convention, last_used_at")
+    .is("deleted_at", null)
+    .order("last_used_at", { ascending: false, nullsFirst: false })
+    .limit(25);
+
+  return (data ?? []).map((t) => ({
+    id: t.id,
+    name: t.name,
+    mapping: (t.column_mapping ?? {}) as Record<string, string>,
+    decimalConvention: (t.decimal_convention as "es" | "us" | null) ?? null,
+    lastUsedAt: t.last_used_at,
+  }));
+}
+
+/** Marca cuál se usó, para que la más reciente encabece el selector. */
+export async function touchImportTemplate(id: string): Promise<void> {
+  if (!z.uuid().safeParse(id).success) return;
+  const supabase = await createClient();
+  await supabase
+    .from("import_templates")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", id);
+}
 
 export async function saveImportTemplate(
   input: unknown,

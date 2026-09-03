@@ -69,6 +69,7 @@ describe("duplicados", () => {
       matchedBy: "cert",
       itemId: "i1",
       sku: "P8-2026-0001",
+      status: null,
     });
   });
 

@@ -21,6 +21,7 @@
     "gen:types:remote": "supabase gen types typescript --linked > lib/supabase/database.types.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.122.0",
     "@base-ui/react": "^1.7.0",
     "@sentry/nextjs": "^10.71.0",
     "@supabase/ssr": "^0.12.5",

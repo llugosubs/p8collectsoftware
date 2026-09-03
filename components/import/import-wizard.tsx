@@ -13,17 +13,20 @@ import {
   Undo2,
   Upload,
 } from "lucide-react";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import {
   analyzeImportFile,
   commitImport,
+  listImportTemplates,
   previewImport,
   revertImportBatch,
   saveImportTemplate,
+  touchImportTemplate,
   type AnalyzeResult,
   type CommitResult,
+  type ImportTemplate,
   type PreviewResult,
 } from "@/app/(admin)/admin/import/actions";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +34,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { IMPORT_FIELDS } from "@/lib/domain/import/columns";
+import {
+  IMPORT_FIELDS,
+  mappingFromTemplate,
+  mappingToHeaders,
+} from "@/lib/domain/import/columns";
 import type { ImportPlan, RowState } from "@/lib/domain/import/plan";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -81,6 +88,39 @@ export function ImportWizard() {
   const [excluidas, setExcluidas] = useState<number[]>([]);
   const [actualizar, setActualizar] = useState<number[]>([]);
   const [nombrePlantilla, setNombrePlantilla] = useState("");
+  const [plantillas, setPlantillas] = useState<ImportTemplate[]>([]);
+
+  useEffect(() => {
+    void listImportTemplates().then(setPlantillas);
+  }, []);
+
+  /**
+   * Aplicar una plantilla guardada.
+   *
+   * El mapeo se guarda por ENCABEZADO, así que se reaplica contra los
+   * encabezados de HOY. Si el dueño insertó una columna esta semana, el campo
+   * sigue cayendo donde debe; y si un encabezado de la plantilla ya no está en
+   * el archivo, se dice — callarlo dejaría un costo del lote en cero sin que
+   * nadie se entere.
+   */
+  function aplicarPlantilla(id: string) {
+    const plantilla = plantillas.find((p) => p.id === id);
+    if (plantilla === undefined || analisis === null) return;
+
+    const { mapping: nuevo, missingHeaders } = mappingFromTemplate(
+      analisis.columns,
+      plantilla.mapping,
+    );
+    setMapping(nuevo);
+    if (plantilla.decimalConvention) setDecimal(plantilla.decimalConvention);
+
+    if (missingHeaders.length > 0) {
+      toast.warning(t("map.templateMissing", { headers: missingHeaders.join(", ") }));
+    } else {
+      toast.success(t("map.templateApplied", { name: plantilla.name }));
+    }
+    void touchImportTemplate(id);
+  }
 
   function lectura() {
     return {
@@ -161,9 +201,15 @@ export function ImportWizard() {
   }
 
   function guardarPlantilla() {
-    if (nombrePlantilla.trim() === "") return;
+    if (nombrePlantilla.trim() === "" || analisis === null) return;
     startTransition(async () => {
-      const resultado = await saveImportTemplate({ name: nombrePlantilla, mapping, decimalConvention });
+      const resultado = await saveImportTemplate({
+        name: nombrePlantilla,
+        // Por encabezado, no por posición: es lo que hace que la plantilla
+        // siga sirviendo cuando el archivo de la semana que viene cambie.
+        mapping: mappingToHeaders(analisis.columns, mapping),
+        decimalConvention,
+      });
       if (!resultado.ok) {
         toast.error(
           resultado.reason === "DUPLICATE_NAME" ? t("errors.DUPLICATE_NAME") : t("errors.SAVE_FAILED"),
@@ -172,6 +218,7 @@ export function ImportWizard() {
       }
       toast.success(t("templateSaved"));
       setNombrePlantilla("");
+      void listImportTemplates().then(setPlantillas);
     });
   }
 
@@ -207,6 +254,8 @@ export function ImportWizard() {
           analisis={analisis}
           mapping={mapping}
           onChange={setMapping}
+          plantillas={plantillas}
+          onAplicarPlantilla={aplicarPlantilla}
           nombrePlantilla={nombrePlantilla}
           onNombre={setNombrePlantilla}
           onGuardar={guardarPlantilla}
@@ -337,6 +386,8 @@ function PasoMapear({
   analisis,
   mapping,
   onChange,
+  plantillas,
+  onAplicarPlantilla,
   nombrePlantilla,
   onNombre,
   onGuardar,
@@ -347,6 +398,8 @@ function PasoMapear({
   analisis: Analisis;
   mapping: Record<string, string>;
   onChange: (m: Record<string, string>) => void;
+  plantillas: readonly ImportTemplate[];
+  onAplicarPlantilla: (id: string) => void;
   nombrePlantilla: string;
   onNombre: (v: string) => void;
   onGuardar: () => void;
@@ -378,6 +431,27 @@ function PasoMapear({
           <h2 className="text-lg font-medium">{t("map.title")}</h2>
           <p className="text-muted-foreground text-sm">{t("map.hint")}</p>
         </div>
+
+        {plantillas.length > 0 && (
+          <div className="space-y-1.5">
+            <Label htmlFor="usar-plantilla">{t("map.useTemplate")}</Label>
+            <select
+              id="usar-plantilla"
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value !== "") onAplicarPlantilla(e.target.value);
+              }}
+              className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
+            >
+              <option value="">{t("map.useTemplatePick")}</option>
+              {plantillas.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {analisis.truncated && (
           <p className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-300">

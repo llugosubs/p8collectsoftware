@@ -7,7 +7,7 @@
 -- ============================================================================
 
 begin;
-select plan(17);
+select plan(22);
 
 \ir fixtures/00_fixtures.psql
 
@@ -195,6 +195,82 @@ select throws_ok(
   'P0001',
   null,
   'un lote ya revertido no se revierte otra vez'
+);
+
+
+-- ===========================================================================
+-- Actualizar una pieza que ya existe
+--
+-- La guardia que faltaba: el RPC comprobaba el estado DESTINO pero no el
+-- ACTUAL, así que una carta vendida que siguiera en el Excel con "recibido =
+-- sí" volvía a `in_stock` y reaparecía como disponible en la tienda.
+-- ===========================================================================
+insert into public.import_batches (id, file_name, rows_total)
+values ('ffffffff-0000-0000-0000-000000000002', 'correcciones.xlsx', 4);
+
+insert into public.import_batch_rows (id, batch_id, row_number, raw_data, state) values
+  ('ffffffff-2222-0000-0000-000000000001', 'ffffffff-0000-0000-0000-000000000002', 2,
+   '{"sku":"P8-TEST-0002"}'::jsonb, 'update_existing'),
+  ('ffffffff-2222-0000-0000-000000000002', 'ffffffff-0000-0000-0000-000000000002', 3,
+   '{"sku":"P8-TEST-VEND"}'::jsonb, 'update_existing'),
+  ('ffffffff-2222-0000-0000-000000000003', 'ffffffff-0000-0000-0000-000000000002', 4,
+   '{"sku":"P8-TEST-TRAN"}'::jsonb, 'update_existing');
+
+-- Una vendida y una en tránsito, para las dos guardias.
+insert into public.items
+  (id, sku, type, category, player_or_character, grading_company, grade, status)
+values
+  ('dddddddd-0000-0000-0000-00000000000a', 'P8-TEST-VEND', 'graded_card', 'sports',
+   'Carta vendida', 'PSA', 10, 'sold'),
+  ('dddddddd-0000-0000-0000-00000000000b', 'P8-TEST-TRAN', 'graded_card', 'sports',
+   'Carta en tránsito', 'PSA', 9, 'incoming');
+
+-- --- La vendida no se toca ---------------------------------------------------
+select throws_ok(
+  $$select public.commit_import_batch(
+      'ffffffff-0000-0000-0000-000000000002',
+      jsonb_build_object('updates', jsonb_build_array(jsonb_build_object(
+        'row_id', 'ffffffff-2222-0000-0000-000000000002',
+        'item_id', 'dddddddd-0000-0000-0000-00000000000a',
+        'patch', jsonb_build_object('status', 'in_stock', 'market_value', '999')))))$$,
+  'P0001',
+  null,
+  'una pieza vendida no vuelve al inventario porque el Excel diga que llegó'
+);
+
+select is(
+  (select status::text from public.items where sku = 'P8-TEST-VEND'),
+  'sold',
+  'y sigue vendida: el intento fallido no escribió nada'
+);
+
+-- --- La que sí se puede actualizar -------------------------------------------
+select lives_ok(
+  $$select public.commit_import_batch(
+      'ffffffff-0000-0000-0000-000000000002',
+      jsonb_build_object('updates', jsonb_build_array(
+        jsonb_build_object(
+          'row_id', 'ffffffff-2222-0000-0000-000000000003',
+          'item_id', 'dddddddd-0000-0000-0000-00000000000b',
+          'patch', jsonb_build_object('status', 'in_stock')),
+        jsonb_build_object(
+          'row_id', 'ffffffff-2222-0000-0000-000000000001',
+          'item_id', 'dddddddd-0000-0000-0000-000000000002',
+          'patch', jsonb_build_object('market_value', '777', 'status', 'in_stock')))))$$,
+  'una pieza en tránsito sí pasa a disponible, y el valor de mercado se corrige'
+);
+
+select is(
+  (select status::text || '/' || (received_at is not null)::text
+     from public.items where sku = 'P8-TEST-TRAN'),
+  'in_stock/true',
+  'la que estaba en tránsito queda disponible y con su fecha de recepción'
+);
+
+select is(
+  (select market_value from public.items where sku = 'P8-TEST-0002'),
+  777.0000::numeric,
+  'y el valor de mercado se actualiza sin tocar el costo'
 );
 
 reset role;

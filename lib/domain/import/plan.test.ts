@@ -165,6 +165,16 @@ describe("costos comunes del lote", () => {
     expect(e.some((m) => /envío/i.test(m))).toBe(true);
   });
 
+  it("un valor de mercado ilegible bloquea su fila", () => {
+    // Es el único monto que no se reparte ni se suma, y por eso se escapaba.
+    // Una celda que diga "aprox 1.200" llega intacta al ::numeric de la
+    // transacción y la aborta ENTERA, con un error de Postgres en inglés.
+    const e = validateRow(fila(4, {}, { marketValue: "aprox 1.200" }));
+    expect(e.some((m) => /valor de mercado/i.test(m))).toBe(true);
+
+    expect(validateRow(fila(4, {}, { marketValue: "1200.00" }))).toEqual([]);
+  });
+
   it("los montos del lote salen a la escala de la base", () => {
     const plan = buildImportPlan({
       rows: [fila(4, { hammerPrice: "100", shippingIntl: "20" })],
@@ -276,5 +286,53 @@ describe("un lote recibido", () => {
       duplicates: sinDuplicados,
     });
     expect(completo.groups[0]!.received).toBe(true);
+  });
+});
+
+describe("actualizar una pieza que ya salió del inventario", () => {
+  it("no se actualiza una carta vendida, aunque la hoja diga otra cosa", () => {
+    // La base también lo impide, pero allá el error aborta el archivo entero.
+    // Aquí la fila se marca antes de confirmar y el resto se importa igual.
+    const duplicados = new Map<number, DuplicateVerdict>([
+      [
+        4,
+        {
+          kind: "duplicate_in_db",
+          matchedBy: "cert",
+          itemId: "i1",
+          sku: "P8-2026-0001",
+          status: "sold",
+        },
+      ],
+    ]);
+    const plan = buildImportPlan({
+      rows: [fila(4)],
+      duplicates: duplicados,
+      updateRowNumbers: [4],
+    });
+    const r = plan.rows[0]!;
+    expect(r.state).toBe("error");
+    expect(r.errors[0]).toMatch(/ya no está en el inventario/);
+  });
+
+  it("una que sigue disponible sí se actualiza", () => {
+    const duplicados = new Map<number, DuplicateVerdict>([
+      [
+        4,
+        {
+          kind: "duplicate_in_db",
+          matchedBy: "cert",
+          itemId: "i1",
+          sku: "P8-2026-0001",
+          status: "in_stock",
+        },
+      ],
+    ]);
+    const plan = buildImportPlan({
+      rows: [fila(4)],
+      duplicates: duplicados,
+      updateRowNumbers: [4],
+    });
+    expect(plan.rows[0]?.state).toBe("update_existing");
   });
 });

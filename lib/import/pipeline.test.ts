@@ -181,3 +181,46 @@ describe("un Excel de verdad, de punta a punta", () => {
     });
   });
 });
+
+/**
+ * El grado no vota sobre cómo se leen los montos.
+ *
+ * PSA imprime "9.5" en la etiqueta y el dueño la transcribe tal cual; el dinero
+ * lo teclea él desde Caracas. Las dos cosas conviven en el mismo archivo sin
+ * contradecirse, porque vienen de fuentes distintas.
+ */
+function excelConGradoAmericano(): ArrayBuffer {
+  const hoja = XLSX.utils.aoa_to_sheet([
+    ["fecha_compra", "plataforma", "referencia_subasta", "tipo", "deporte_o_juego",
+     "jugador_o_personaje", "gradadora", "grado", "hammer_usd", "fee_tarjeta_pct"],
+    // Todo como TEXTO a propósito: es lo que pasa con un CSV o con una hoja
+    // donde las columnas quedaron con formato de texto.
+    ["14/08/2026", "alt", "ALT-1", "carta graduada", "NBA", "Wembanyama",
+     "psa", "9.5", "1.234", "3,3"],
+  ]);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, "Hoja1");
+  return XLSX.write(libro, { type: "array", bookType: "xlsx" }) as ArrayBuffer;
+}
+
+describe("el grado no decide cómo se lee el dinero", () => {
+  it("un grado 9.5 no convierte el archivo en gringo", () => {
+    // Si votara, inferDecimalConvention devolvería "us" con confident:true —así
+    // que el toggle del paso 3 ni aparecería— y el martillo de 1.234 dólares se
+    // leería como uno con veintitrés. El precio dividido entre mil, en silencio.
+    const grid = readSheet(excelConGradoAmericano());
+    const encabezados = findHeaderRow(textRows(grid))!;
+    const leidas = readRows(
+      grid,
+      encabezados.index,
+      mappingFromMatches(matchColumns(encabezados.headers)),
+    );
+
+    expect(leidas.decimalConvention).toBe("es");
+    expect(leidas.rows[0]?.hammerPrice).toBe("1234");
+    expect(leidas.rows[0]?.cardFeePct).toBe("3.3");
+    // Y el grado se sigue leyendo bien: su forma es inequívoca con cualquier
+    // convención, porque nunca trae tres dígitos después del separador.
+    expect(leidas.rows[0]?.item.grade).toBe(9.5);
+  });
+});

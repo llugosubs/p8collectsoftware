@@ -50,7 +50,25 @@ export type ReadRowsResult = {
   ambiguousDates: string[];
 };
 
-/** Columnas cuyo texto puede llevar separador decimal y sirve como evidencia. */
+/**
+ * Columnas cuyo texto sirve como EVIDENCIA de la convención decimal.
+ *
+ * El grado NO está en esta lista, y su ausencia es el punto entero:
+ *
+ * Un grado se copia de la etiqueta del slab, y PSA la imprime a la americana:
+ * "9.5". El dinero, en cambio, lo teclea el dueño desde Caracas: "1.234,56".
+ * El mismo archivo puede tener las dos cosas sin contradecirse, porque vienen
+ * de dos fuentes distintas.
+ *
+ * Si el grado contara como evidencia, un "9.5" resolvería el archivo entero
+ * como gringo —con `confident: true`, así que el toggle del paso 3 ni
+ * aparecería— y un martillo de "1.234" se leería como un dólar con veintitrés.
+ * Comprobado: el precio se divide entre mil, en silencio.
+ *
+ * Y sacarlo no cuesta nada: un grado nunca tiene tres dígitos después del
+ * separador, así que su forma es inequívoca y se lee igual con cualquier
+ * convención.
+ */
 const CAMPOS_NUMERICOS: readonly ImportField[] = [
   "hammerPrice",
   "buyerPremium",
@@ -59,7 +77,6 @@ const CAMPOS_NUMERICOS: readonly ImportField[] = [
   "courierVe",
   "customsVe",
   "marketValue",
-  "grade",
 ];
 
 function celda(fila: readonly Cell[], mapping: ColumnMapping, field: ImportField): Cell | null {

@@ -32,14 +32,25 @@ export type DuplicateKeys = {
   grade: string | number | null;
 };
 
-export type ExistingItem = DuplicateKeys & { id: string; sku: string };
+export type ExistingItem = DuplicateKeys & {
+  id: string;
+  sku: string;
+  /** Estado actual. Decide si esta pieza se puede actualizar desde una hoja. */
+  status?: string | null;
+};
 
 export type ImportRowKeys = DuplicateKeys & { rowNumber: number };
 
 export type DuplicateVerdict =
   | { kind: "new" }
   | { kind: "duplicate_in_file"; matchedBy: MatchKind; firstRowNumber: number }
-  | { kind: "duplicate_in_db"; matchedBy: MatchKind; itemId: string; sku: string };
+  | {
+      kind: "duplicate_in_db";
+      matchedBy: MatchKind;
+      itemId: string;
+      sku: string;
+      status?: string | null;
+    };
 
 /**
  * La clave del cert, idéntica a la del índice único de la base.
@@ -120,6 +131,7 @@ export function findDuplicates(
         matchedBy,
         itemId: enBase.id,
         sku: enBase.sku,
+        status: enBase.status ?? null,
       });
       continue;
     }

@@ -213,3 +213,67 @@ export function findHeaderRow(
 
   return mejor === null ? null : { index: mejor.index, headers: mejor.headers };
 }
+
+/**
+ * El mapeo, guardado por ENCABEZADO en vez de por posición.
+ *
+ * Una plantilla existe para reusarse la semana siguiente. Si se guardara la
+ * posición, bastaría que el dueño insertara una columna para que la aduana se
+ * leyera donde está el valor de mercado: dos montos válidos, ninguna
+ * restricción que salte, y el error aparece meses después en un margen que no
+ * cuadra.
+ */
+export function mappingToHeaders(
+  columns: readonly { index: number; header: string }[],
+  mapping: Readonly<Record<string, ImportField | string>>,
+): Record<string, ImportField> {
+  const porEncabezado: Record<string, ImportField> = {};
+
+  for (const columna of columns) {
+    const campo = mapping[String(columna.index)];
+    const encabezado = columna.header.trim();
+    if (campo === undefined || encabezado === "") continue;
+    porEncabezado[encabezado] = campo as ImportField;
+  }
+
+  return porEncabezado;
+}
+
+/**
+ * Aplica una plantilla guardada a los encabezados de HOY.
+ *
+ * Devuelve también lo que no encontró: si la plantilla esperaba "aduana_usd" y
+ * este archivo no la trae, hay que decirlo. Callarlo dejaría un costo del lote
+ * en cero sin que nadie se entere.
+ */
+export function mappingFromTemplate(
+  columns: readonly { index: number; header: string }[],
+  plantilla: Readonly<Record<string, ImportField | string>>,
+): { mapping: Record<string, ImportField>; missingHeaders: string[] } {
+  const porClave = new Map<string, ImportField>();
+  for (const [encabezado, campo] of Object.entries(plantilla)) {
+    const clave = fold(encabezado);
+    if (clave !== "") porClave.set(clave, campo as ImportField);
+  }
+
+  const mapping: Record<string, ImportField> = {};
+  const usados = new Set<ImportField>();
+  const encontrados = new Set<string>();
+
+  for (const columna of columns) {
+    const clave = fold(columna.header);
+    const campo = porClave.get(clave);
+    // Un campo no se reparte en dos columnas, igual que en el reconocimiento
+    // automático: si el archivo trae el encabezado repetido, gana el primero.
+    if (campo === undefined || usados.has(campo)) continue;
+    mapping[String(columna.index)] = campo;
+    usados.add(campo);
+    encontrados.add(clave);
+  }
+
+  const missingHeaders = Object.keys(plantilla).filter(
+    (encabezado) => !encontrados.has(fold(encabezado)),
+  );
+
+  return { mapping, missingHeaders };
+}

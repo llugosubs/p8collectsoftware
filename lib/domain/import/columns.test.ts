@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { findHeaderRow, matchColumns } from "./columns";
+import {
+  findHeaderRow,
+  mappingFromTemplate,
+  mappingToHeaders,
+  matchColumns,
+} from "./columns";
 
 function campos(headers: readonly string[]) {
   return Object.fromEntries(matchColumns(headers).map((m) => [m.header, m.field]));
@@ -124,5 +129,75 @@ describe("encontrar la fila de encabezados", () => {
       ["jugador", "grado", "hammer_usd"],
     ];
     expect(findHeaderRow(filas)?.index).toBe(1);
+  });
+});
+
+describe("plantillas de mapeo", () => {
+  const columnas = [
+    { index: 0, header: "fecha_compra" },
+    { index: 1, header: "Jugador / Personaje" },
+    { index: 2, header: "hammer_usd" },
+  ];
+
+  it("guarda el mapeo por encabezado, no por posición", () => {
+    const guardado = mappingToHeaders(columnas, {
+      "0": "purchasedAt",
+      "1": "playerOrCharacter",
+      "2": "hammerPrice",
+    });
+    expect(guardado).toEqual({
+      fecha_compra: "purchasedAt",
+      "Jugador / Personaje": "playerOrCharacter",
+      hammer_usd: "hammerPrice",
+    });
+  });
+
+  it("aguanta que el dueño inserte una columna la semana siguiente", () => {
+    // Con un mapeo por posición, la columna 2 seguiría siendo el martillo y el
+    // sistema leería el martillo donde está el lote: un monto válido en el
+    // sitio equivocado, sin que nada falle.
+    const guardado = mappingToHeaders(columnas, {
+      "0": "purchasedAt",
+      "1": "playerOrCharacter",
+      "2": "hammerPrice",
+    });
+
+    const estaSemana = [
+      { index: 0, header: "fecha_compra" },
+      { index: 1, header: "Jugador / Personaje" },
+      { index: 2, header: "lote" },
+      { index: 3, header: "hammer_usd" },
+    ];
+
+    const { mapping } = mappingFromTemplate(estaSemana, guardado);
+    expect(mapping["3"]).toBe("hammerPrice");
+    expect(mapping["2"]).toBeUndefined();
+  });
+
+  it("aguanta acentos y mayúsculas al reaplicar", () => {
+    const { mapping } = mappingFromTemplate([{ index: 0, header: "  AÑO  " }], {
+      año: "year",
+    });
+    expect(mapping["0"]).toBe("year");
+  });
+
+  it("dice qué encabezado de la plantilla no encontró", () => {
+    // Callarlo dejaría un costo del lote en cero sin que nadie se entere.
+    const { missingHeaders } = mappingFromTemplate([{ index: 0, header: "hammer_usd" }], {
+      hammer_usd: "hammerPrice",
+      aduana_usd: "customsVe",
+    });
+    expect(missingHeaders).toEqual(["aduana_usd"]);
+  });
+
+  it("no reparte el mismo campo en dos columnas", () => {
+    const { mapping } = mappingFromTemplate(
+      [
+        { index: 0, header: "jugador" },
+        { index: 1, header: "jugador" },
+      ],
+      { jugador: "playerOrCharacter" },
+    );
+    expect(Object.values(mapping)).toEqual(["playerOrCharacter"]);
   });
 });
