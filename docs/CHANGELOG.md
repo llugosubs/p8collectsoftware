@@ -5,6 +5,84 @@ Formato: una entrada por fase. Ver las fases en la sección 11 del
 
 ---
 
+## Fase 2 · Entrega D — Extras del importador · 3 de septiembre de 2026
+
+Los tres extras de §7.12, y seis defectos de la Entrega C que aparecieron al someter su
+diseño a crítica adversarial contra el repositorio.
+
+### Primero: seis defectos del código que ya corría
+
+Los críticos devolvieron 31 hallazgos confirmados. Cuatro no eran del diseño propuesto sino
+de lo que ya estaba en producción, y dos más aparecieron al construir.
+
+| # | Qué estaba mal | Por qué importaba |
+|---|---|---|
+| 1 | El **grado votaba** sobre cómo se lee el dinero | PSA imprime "9.5" y el dueño lo transcribe; el dinero lo teclea él a la venezolana. Un "9.5" resolvía el archivo entero como gringo —con `confident: true`, así que el toggle del paso 3 ni aparecía— y "1.234" se leía como un dólar con veintitrés. Comprobado antes de creerlo |
+| 2 | Una carta **vendida volvía al inventario** | El camino de actualizar comprobaba el estado destino pero no el actual. Una carta vendida que siguiera en el Excel con "recibido = sí" reaparecía disponible, y en la tienda |
+| 3 | El **valor de mercado** no lo validaba nadie | "aprox 1.200" llegaba intacto al `::numeric` y abortaba la transacción ENTERA, con un error de Postgres en inglés |
+| 4 | Las **plantillas se guardaban por posición** de columna | El comentario de la migración prometía `{ "Jugador / Personaje": ... }` y el código guardaba `{ "5": ... }`. Insertar una columna hacía leer la aduana donde está el valor de mercado: dos montos válidos, nada que falle, y el error aparece meses después |
+| 5 | Una **gradadora mal tecleada** se volvía "sin gradar" | "PSAA" entraba como carta SIN GRADAR con grado 10: un slab PSA 10 archivado como carta suelta |
+| 6 | Guardar una plantilla **no servía de nada** | No había forma de volver a aplicarla |
+
+### Exportación inversa: la ida y vuelta por SKU
+
+El master prompt pide bajar el inventario "en el mismo formato de la plantilla". No se hace
+así, y el motivo es de dinero: la plantilla tiene forma de **compra** y reimportar el
+inventario en ese formato crearía lotes falsos y volvería a cargar un costo ya pagado.
+
+Lo que sí funciona es el **SKU**. Un SKU solo puede haber salido de este sistema: no es un
+parecido, es identidad. El importador lo lee como "esta pieza ya existe" y la fila entra por
+el camino de actualizar, que solo toca valor de mercado, precios, ubicación y si ya llegó.
+
+Por eso una fila con SKU se marca para actualizar **sola** — es lo que el dueño pidió al
+bajar el inventario para editarlo. Las otras dos coincidencias, cert y posición en el lote,
+son heurísticas y siguen empezando en "omitir". Y una fila **sin** SKU en ese archivo sale
+con los cinco errores que le faltan para ser una compra, que es la respuesta honesta.
+
+### Google Sheets sin OAuth
+
+Una hoja compartida por enlace se baja como CSV sin credenciales. El riesgo no es Google: es
+que el servidor haga una petición HTTP a partir de algo que escribió el usuario. La defensa
+no es una lista de hosts prohibidos — **la URL del usuario nunca se pide**. De ella se
+extraen dos cadenas y el servidor construye la única URL que puede pedir; no queda ni host,
+ni ruta, ni query bajo su control. Encima, redirecciones seguidas a mano con el host
+comprobado en cada salto, tope de saltos, de tiempo, y de bytes *mientras* se lee.
+
+Verificado contra Google de verdad: los metadatos de la nube (`169.254.169.254`) y un
+servicio interno se rechazan antes de salir; una hoja pública se baja, queda en el bucket
+privado, y el pipeline la rechaza sola porque sus columnas no son de cartas.
+
+**Lo que no se construyó**: la sincronización incremental por hash de fila. La crítica la
+desarmó — sacar las filas sin cambios del grupo hace que el lote pierda sus costos comunes y
+el prorrateo se reparta entre menos piezas, o sea que **el costo de las cartas viejas cambia
+solo**; una clave de idempotencia derivada de la conexión hace imposible agregar una carta a
+un lote ya importado; y un documento que cualquiera con el enlace puede editar no puede
+tener autoridad de escritura sobre inventario existente. Traer la hoja entera y pasarla por
+los cuatro pasos hace el mismo trabajo sin ninguno de esos agujeros.
+
+### Importar por foto
+
+Una foto no produce montos, produce **celdas**. Lo que sale del modelo es texto transcrito
+tal como se ve; se materializa en una hoja con las columnas de la plantilla y de ahí en
+adelante es un archivo como cualquier otro. Ningún campo del esquema es `number`, y el
+esquema **omite** los costos comunes, la plataforma, la referencia y la fecha: lo que no
+está declarado no puede aparecer en la respuesta, ni alucinado.
+
+La ruta de la foto se valida contra un patrón exacto —`docs` guarda comprobantes de pago— y
+el action lleva guardia de rol explícita, porque el gasto y la salida hacia un tercero
+ocurren antes de que ninguna política de Postgres tenga nada que decir.
+
+Sin `ANTHROPIC_API_KEY` el módulo se apaga entero y dice por qué.
+
+### Verificación
+
+- 235 tests unitarios (17 nuevos de dominio) y 50 pgTAP.
+- La ida y vuelta, en el navegador con un archivo editado de verdad: 2 filas actualizadas,
+  **0 lotes creados**, "1.850,50" leído como 1850.5000 y el costo prorrateado intacto.
+- Las tres defensas de SSRF, contra Google de verdad.
+
+---
+
 ## Fase 2 · Entrega C — Importador semanal de Excel · 31 de agosto de 2026
 
 El módulo que más cambia el día a día: el dueño arma su tabla en Excel, la sube, y el
