@@ -12,6 +12,7 @@ import {
   type ImportRowKeys,
 } from "@/lib/domain/import/duplicates";
 import { buildImportPlan, type ImportPlan } from "@/lib/domain/import/plan";
+import { downloadGoogleSheetCsv, SheetFetchError } from "@/lib/import/fetch-sheet";
 import { readSheet, listSheets, textRows, SheetReadError } from "@/lib/import/parse";
 import { readRows, type ColumnMapping } from "@/lib/import/rows";
 import { createClient } from "@/lib/supabase/server";
@@ -59,6 +60,31 @@ const lecturaSchema = z.object({
 
 export type ImportActionError = { ok: false; reason: string; detail?: string };
 
+/**
+ * Guardia de rol explícita.
+ *
+ * En el resto del panel el RLS es el control completo, y basta. Aquí no: bajar
+ * una hoja de Google es una petición HTTP que SALE de nuestro servidor, y eso
+ * ocurre antes de que ninguna política de Postgres tenga nada que decir. Todo
+ * usuario nace `viewer`, así que sin esta línea cualquiera con una cuenta
+ * podría hacer que el servidor pida URLs.
+ */
+async function esAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  return profile?.role === "owner" || profile?.role === "admin";
+}
+
 /** El tope del bucket `docs`. Se comprueba antes de bajarlo a memoria. */
 const MAX_BYTES = 20 * 1024 * 1024;
 
@@ -92,6 +118,8 @@ function mensaje(error: unknown): string {
 export type AnalyzeResult =
   | {
       ok: true;
+      /** Dónde quedó el archivo. Es el ancla de todos los pasos siguientes. */
+      storagePath: string;
       sheetNames: string[];
       sheetName: string;
       headerRow: number;
@@ -102,6 +130,50 @@ export type AnalyzeResult =
       truncated: boolean;
     }
   | ImportActionError;
+
+/**
+ * Trae una hoja de Google y la deja en el bucket como un archivo más.
+ *
+ * No hay OAuth y no hace falta: una hoja compartida por enlace se baja como
+ * CSV sin credenciales. El precio —hay que decirlo, y la interfaz lo dice— es
+ * que la hoja tiene que estar compartida.
+ *
+ * Se guarda el CSV en Storage en vez de parsearlo al vuelo para que TODO lo de
+ * abajo sea idéntico al camino del Excel: el mismo `storagePath` como ancla, el
+ * mismo recálculo del plan en cada paso, el mismo archivo original guardado, y
+ * la misma reversión. Un segundo camino de lectura sería un segundo sitio donde
+ * el prorrateo puede quedar mal.
+ */
+export async function importFromGoogleSheet(input: unknown): Promise<AnalyzeResult> {
+  if (!(await esAdmin())) return { ok: false, reason: "FORBIDDEN" };
+
+  const parsed = z.object({ url: z.string().min(1).max(2000) }).safeParse(input);
+  if (!parsed.success) return { ok: false, reason: "INVALID_INPUT" };
+
+  let descarga;
+  try {
+    descarga = await downloadGoogleSheetCsv(parsed.data.url);
+  } catch (error) {
+    if (error instanceof SheetFetchError) {
+      return { ok: false, reason: error.code, detail: error.message };
+    }
+    return { ok: false, reason: "UNREACHABLE" };
+  }
+
+  const supabase = await createClient();
+  const storagePath = `imports/${crypto.randomUUID()}-hoja-${descarga.sheetId.slice(0, 12)}.csv`;
+
+  const { error } = await supabase.storage
+    .from("docs")
+    .upload(storagePath, new Blob([descarga.csv], { type: "text/csv" }), {
+      contentType: "text/csv",
+      upsert: false,
+    });
+
+  if (error) return { ok: false, reason: "UPLOAD_FAILED", detail: error.message };
+
+  return analyzeImportFile({ storagePath });
+}
 
 export async function analyzeImportFile(input: unknown): Promise<AnalyzeResult> {
   const parsed = z
@@ -124,6 +196,7 @@ export async function analyzeImportFile(input: unknown): Promise<AnalyzeResult> 
 
     return {
       ok: true,
+      storagePath: parsed.data.storagePath,
       sheetNames,
       sheetName: grid.sheetName,
       headerRow: encabezados.index,

@@ -414,7 +414,11 @@
         "formats": ".xlsx, .xls or .csv, up to 20 MB",
         "template": "Download the 27-column template",
         "roundtrip": "Download inventory to edit in Excel",
-        "roundtripHint": "Every row carries its SKU: re-uploading updates the item instead of creating a lot."
+        "roundtripHint": "Every row carries its SKU: re-uploading updates the item instead of creating a lot.",
+        "or": "or",
+        "sheetLink": "Pull from Google Sheets",
+        "fetchSheet": "Pull",
+        "sheetHint": "The sheet must be shared by link (“Anyone with the link”). No access to your Google account is requested."
       },
       "map": {
         "title": "Check the mapping",
@@ -520,7 +524,14 @@
         "UNREADABLE": "The file could not be read.",
         "DUPLICATE_NAME": "There is already a template with that name.",
         "SAVE_FAILED": "The template could not be saved.",
-        "REVERT_BLOCKED": "This batch cannot be undone."
+        "REVERT_BLOCKED": "This batch cannot be undone.",
+        "NOT_A_SHEET": "That link does not look like Google Sheets. Copy the address bar with the sheet open.",
+        "NOT_SHARED": "The sheet is not shared. In Google Sheets: Share → Anyone with the link → Viewer.",
+        "NOT_FOUND": "That sheet does not exist or was deleted.",
+        "TOO_LARGE": "The sheet is larger than 8 MB.",
+        "TIMEOUT": "Google did not answer in time. Try again.",
+        "UNREACHABLE": "The sheet could not be fetched.",
+        "UPLOAD_FAILED": "The sheet was fetched but could not be stored."
       }
     },
     "accounts": {

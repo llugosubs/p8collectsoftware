@@ -414,7 +414,11 @@
         "formats": ".xlsx, .xls o .csv, hasta 20 MB",
         "template": "Descargar la plantilla con las 27 columnas",
         "roundtrip": "Bajar el inventario para editarlo en Excel",
-        "roundtripHint": "Cada fila trae su SKU: al volver a subirla, se actualiza la pieza en vez de crear un lote."
+        "roundtripHint": "Cada fila trae su SKU: al volver a subirla, se actualiza la pieza en vez de crear un lote.",
+        "or": "o",
+        "sheetLink": "Traer desde Google Sheets",
+        "fetchSheet": "Traer",
+        "sheetHint": "La hoja tiene que estar compartida por enlace («Cualquiera con el enlace»). No se pide acceso a tu cuenta de Google."
       },
       "map": {
         "title": "Revisa el mapeo",
@@ -520,7 +524,14 @@
         "UNREADABLE": "No se pudo leer el archivo.",
         "DUPLICATE_NAME": "Ya hay una plantilla con ese nombre.",
         "SAVE_FAILED": "No se pudo guardar la plantilla.",
-        "REVERT_BLOCKED": "No se puede deshacer este lote."
+        "REVERT_BLOCKED": "No se puede deshacer este lote.",
+        "NOT_A_SHEET": "Ese enlace no parece de Google Sheets. Copia la barra de direcciones con la hoja abierta.",
+        "NOT_SHARED": "La hoja no está compartida. En Google Sheets: Compartir → Cualquiera con el enlace → Lector.",
+        "NOT_FOUND": "Esa hoja no existe o se borró.",
+        "TOO_LARGE": "La hoja pesa más de 8 MB.",
+        "TIMEOUT": "Google no respondió a tiempo. Vuelve a intentarlo.",
+        "UNREACHABLE": "No se pudo traer la hoja.",
+        "UPLOAD_FAILED": "Se bajó la hoja pero no se pudo guardar."
       }
     },
     "accounts": {

@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Download,
   FileSpreadsheet,
+  Link2,
   Loader2,
   Undo2,
   Upload,
@@ -19,6 +20,7 @@ import { toast } from "sonner";
 import {
   analyzeImportFile,
   commitImport,
+  importFromGoogleSheet,
   listImportTemplates,
   previewImport,
   revertImportBatch,
@@ -89,6 +91,7 @@ export function ImportWizard() {
   const [actualizar, setActualizar] = useState<number[]>([]);
   const [nombrePlantilla, setNombrePlantilla] = useState("");
   const [plantillas, setPlantillas] = useState<ImportTemplate[]>([]);
+  const [enlaceHoja, setEnlaceHoja] = useState("");
 
   useEffect(() => {
     void listImportTemplates().then(setPlantillas);
@@ -155,22 +158,47 @@ export function ImportWizard() {
       }
 
       const resultado = await analyzeImportFile({ storagePath: path });
-      if (!resultado.ok) {
-        toast.error(t.has(`errors.${resultado.reason}`) ? t(`errors.${resultado.reason}`) : (resultado.detail ?? resultado.reason));
-        return;
-      }
-
-      setArchivo({ path, name: file.name });
-      setAnalisis(resultado);
-      setMapping(
-        Object.fromEntries(
-          resultado.columns.filter((c) => c.field !== null).map((c) => [String(c.index), c.field!]),
-        ),
-      );
-      setPaso(2);
+      aplicarAnalisis(resultado, file.name);
     } finally {
       setSubiendo(false);
     }
+  }
+
+  /** El paso 2 es el mismo venga de un Excel, de un CSV o de una hoja de Google. */
+  function aplicarAnalisis(resultado: AnalyzeResult, name: string): boolean {
+    if (!resultado.ok) {
+      toast.error(
+        t.has(`errors.${resultado.reason}`)
+          ? t(`errors.${resultado.reason}`)
+          : (resultado.detail ?? resultado.reason),
+      );
+      return false;
+    }
+
+    setArchivo({ path: resultado.storagePath, name });
+    setAnalisis(resultado);
+    setMapping(
+      Object.fromEntries(
+        resultado.columns.filter((c) => c.field !== null).map((c) => [String(c.index), c.field!]),
+      ),
+    );
+    setPaso(2);
+    return true;
+  }
+
+  function traerHoja() {
+    if (enlaceHoja.trim() === "") return;
+    setSubiendo(true);
+    startTransition(async () => {
+      try {
+        // La ruta viene de vuelta dentro del análisis: el CSV ya quedó en el
+        // bucket, así que de aquí en adelante es un archivo como cualquier otro.
+        const resultado = await importFromGoogleSheet({ url: enlaceHoja });
+        aplicarAnalisis(resultado, "Google Sheets");
+      } finally {
+        setSubiendo(false);
+      }
+    });
   }
 
   // --- Paso 2 → 3: validar ---------------------------------------------------
@@ -246,7 +274,13 @@ export function ImportWizard() {
       <Pasos actual={paso} />
 
       {paso === 1 && (
-        <PasoSubir subiendo={subiendo} onFile={subir} />
+        <PasoSubir
+          subiendo={subiendo}
+          onFile={subir}
+          enlaceHoja={enlaceHoja}
+          onEnlace={setEnlaceHoja}
+          onTraerHoja={traerHoja}
+        />
       )}
 
       {paso === 2 && analisis !== null && (
@@ -328,9 +362,15 @@ function Pasos({ actual }: { actual: number }) {
 function PasoSubir({
   subiendo,
   onFile,
+  enlaceHoja,
+  onEnlace,
+  onTraerHoja,
 }: {
   subiendo: boolean;
   onFile: (file: File) => void;
+  enlaceHoja: string;
+  onEnlace: (v: string) => void;
+  onTraerHoja: () => void;
 }) {
   const t = useTranslations("admin.import");
 
@@ -369,6 +409,41 @@ function PasoSubir({
             }}
           />
         </label>
+
+        <div className="space-y-2">
+          <div className="flex items-center gap-3">
+            <span className="bg-border h-px flex-1" />
+            <span className="text-muted-foreground text-xs uppercase tracking-wide">
+              {t("upload.or")}
+            </span>
+            <span className="bg-border h-px flex-1" />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="enlace-hoja" className="flex items-center gap-1.5">
+              <Link2 className="size-4" aria-hidden />
+              {t("upload.sheetLink")}
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="enlace-hoja"
+                value={enlaceHoja}
+                onChange={(e) => onEnlace(e.target.value)}
+                placeholder="https://docs.google.com/spreadsheets/d/..."
+                disabled={subiendo}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onTraerHoja}
+                disabled={subiendo || enlaceHoja.trim() === ""}
+              >
+                {t("upload.fetchSheet")}
+              </Button>
+            </div>
+            <p className="text-muted-foreground/70 text-xs">{t("upload.sheetHint")}</p>
+          </div>
+        </div>
 
         <div className="space-y-2">
           <Link
