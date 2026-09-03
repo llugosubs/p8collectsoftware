@@ -531,7 +531,33 @@
         "TOO_LARGE": "La hoja pesa más de 8 MB.",
         "TIMEOUT": "Google no respondió a tiempo. Vuelve a intentarlo.",
         "UNREACHABLE": "No se pudo traer la hoja.",
-        "UPLOAD_FAILED": "Se bajó la hoja pero no se pudo guardar."
+        "UPLOAD_FAILED": "Se bajó la hoja pero no se pudo guardar.",
+        "VISION_DISABLED": "El importador por foto necesita ANTHROPIC_API_KEY en el servidor.",
+        "VISION_REFUSED": "El modelo no pudo procesar esa imagen.",
+        "VISION_UNREADABLE": "No se reconoció ninguna carta en la foto. Prueba con más luz o más cerca.",
+        "VISION_API_ERROR": "Falló la lectura de la foto."
+      },
+      "photo": {
+        "open": "Importar por foto",
+        "title": "Importar por foto",
+        "hint": "De la etiqueta salen los datos de la carta. La plataforma, la fecha y los costos del lote los escribes tú: ninguna foto los sabe.",
+        "disabled": "Necesita ANTHROPIC_API_KEY en el servidor. El resto del importador funciona igual.",
+        "platform": "Plataforma",
+        "purchasedAt": "Fecha de compra",
+        "reference": "Referencia (opcional)",
+        "shipping": "Envío del lote (opcional)",
+        "premium": "Comisión de la casa (opcional)",
+        "received": "Ya llegó",
+        "modeSlab": "Fotos de slabs",
+        "modeList": "Foto de una lista",
+        "takePhoto": "Tomar foto",
+        "pickPhoto": "Elegir imagen",
+        "read": "{n, plural, =0 {Leer} one {Leer # foto} other {Leer # fotos}}",
+        "sheetName": "Fotos",
+        "alwaysReviewed": "Lo que se lea pasa por la previsualización antes de crear nada. Nada entra al inventario sin que lo mires.",
+        "forbidden": "Tu rol no puede subir fotos al importador.",
+        "badImage": "Esa imagen no se pudo preparar.",
+        "uploadFailed": "No se pudo subir la foto."
       }
     },
     "accounts": {

@@ -31,6 +31,7 @@ import {
   type ImportTemplate,
   type PreviewResult,
 } from "@/app/(admin)/admin/import/actions";
+import { PhotoSource } from "@/components/import/photo-source";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,7 +72,7 @@ const ESTADO_TONO: Record<RowState, string> = {
   error: "border-red-500/40 bg-red-500/10 text-red-300",
 };
 
-export function ImportWizard() {
+export function ImportWizard({ visionEnabled }: { visionEnabled: boolean }) {
   const t = useTranslations("admin.import");
   const router = useRouter();
   const [pendiente, startTransition] = useTransition();
@@ -280,6 +281,8 @@ export function ImportWizard() {
           enlaceHoja={enlaceHoja}
           onEnlace={setEnlaceHoja}
           onTraerHoja={traerHoja}
+          visionEnabled={visionEnabled}
+          onAnalyzed={aplicarAnalisis}
         />
       )}
 
@@ -365,12 +368,16 @@ function PasoSubir({
   enlaceHoja,
   onEnlace,
   onTraerHoja,
+  visionEnabled,
+  onAnalyzed,
 }: {
   subiendo: boolean;
   onFile: (file: File) => void;
   enlaceHoja: string;
   onEnlace: (v: string) => void;
   onTraerHoja: () => void;
+  visionEnabled: boolean;
+  onAnalyzed: (resultado: AnalyzeResult, nombre: string) => void;
 }) {
   const t = useTranslations("admin.import");
 
@@ -443,6 +450,8 @@ function PasoSubir({
             </div>
             <p className="text-muted-foreground/70 text-xs">{t("upload.sheetHint")}</p>
           </div>
+
+          <PhotoSource enabled={visionEnabled} onAnalyzed={onAnalyzed} />
         </div>
 
         <div className="space-y-2">

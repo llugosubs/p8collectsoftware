@@ -18,6 +18,15 @@
  */
 
 export const MAX_EDGE_PX = 2000;
+
+/**
+ * El borde máximo para una foto que va a leer un modelo de visión.
+ *
+ * Por encima de 1568 px el modelo no lee mejor la etiqueta y solo se pagan más
+ * tokens de imagen; por debajo se pierden los dígitos del cert, que es el dato
+ * más frágil de toda la extracción.
+ */
+export const VISION_MAX_EDGE_PX = 1568;
 export const OUTPUT_TYPE = "image/webp";
 export const OUTPUT_QUALITY = 0.85;
 /** Tope del bucket `cards`. */
@@ -47,7 +56,10 @@ export function fitWithin(
   };
 }
 
-export async function prepareImage(file: File): Promise<PreparedImage> {
+export async function prepareImage(
+  file: File,
+  maxEdge: number = MAX_EDGE_PX,
+): Promise<PreparedImage> {
   if (!file.type.startsWith("image/")) throw new ImagePrepError("NOT_AN_IMAGE");
 
   let bitmap: ImageBitmap;
@@ -58,7 +70,7 @@ export async function prepareImage(file: File): Promise<PreparedImage> {
     throw new ImagePrepError("DECODE_FAILED");
   }
 
-  const { width, height } = fitWithin(bitmap.width, bitmap.height);
+  const { width, height } = fitWithin(bitmap.width, bitmap.height, maxEdge);
 
   const canvas = document.createElement("canvas");
   canvas.width = width;

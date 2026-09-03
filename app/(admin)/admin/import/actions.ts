@@ -12,8 +12,11 @@ import {
   type ImportRowKeys,
 } from "@/lib/domain/import/duplicates";
 import { buildImportPlan, type ImportPlan } from "@/lib/domain/import/plan";
+import { extractCardsFromImage, isVisionEnabled, VisionError } from "@/lib/ai/vision";
+import { buildPhotoSheet, PHOTO_SHEET_HEADERS } from "@/lib/domain/import/photo-sheet";
 import { downloadGoogleSheetCsv, SheetFetchError } from "@/lib/import/fetch-sheet";
 import { readSheet, listSheets, textRows, SheetReadError } from "@/lib/import/parse";
+import * as XLSX from "xlsx";
 import { readRows, type ColumnMapping } from "@/lib/import/rows";
 import { createClient } from "@/lib/supabase/server";
 
@@ -171,6 +174,103 @@ export async function importFromGoogleSheet(input: unknown): Promise<AnalyzeResu
     });
 
   if (error) return { ok: false, reason: "UPLOAD_FAILED", detail: error.message };
+
+  return analyzeImportFile({ storagePath });
+}
+
+// ---------------------------------------------------------------------------
+// Importar por foto
+// ---------------------------------------------------------------------------
+
+/**
+ * La ruta de una foto del importador, y ninguna otra.
+ *
+ * `docs` es un bucket privado que guarda comprobantes de pago y contratos de
+ * consignación. Sin este patrón, un `storagePath` cualquiera mandaría a un
+ * tercero el contenido íntegro de la captura de un Zelle. La foto de una carta
+ * solo puede vivir en `imports/photos/{uuid}.webp`, y solo eso se lee.
+ */
+const RUTA_DE_FOTO = /^imports\/photos\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
+
+const fotosSchema = z.object({
+  storagePaths: z.array(z.string().regex(RUTA_DE_FOTO)).min(1).max(4),
+  mode: z.enum(["slab", "lista"]).default("slab"),
+  lote: z.object({
+    platform: z.enum([
+      "alt", "goldin", "ebay", "whatnot", "fanatics", "pwcc", "private", "retail", "other",
+    ]),
+    purchasedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    reference: z.string().trim().max(120).optional(),
+    received: z.boolean().default(false),
+    buyerPremium: z.string().max(24).optional(),
+    cardFeePct: z.string().max(24).optional(),
+    shippingIntl: z.string().max(24).optional(),
+    courierVe: z.string().max(24).optional(),
+    customsVe: z.string().max(24).optional(),
+  }),
+});
+
+export async function visionStatus(): Promise<{ enabled: boolean }> {
+  return { enabled: isVisionEnabled() };
+}
+
+/**
+ * De fotos a una hoja, y de ahí al mismo wizard de siempre.
+ *
+ * No es un quinto paso ni un inyector de filas: es otra fuente del paso 1. Las
+ * cartas leídas se materializan en una hoja con las columnas de la plantilla,
+ * la hoja se guarda en el bucket, y `analyzeImportFile` la abre como abriría
+ * un Excel del dueño. Así el camino de la foto comparte todo lo de abajo —la
+ * previsualización, la transacción, la reversión— en vez de abrir un segundo
+ * sitio donde el prorrateo pueda quedar mal.
+ */
+export async function extractFromPhotos(input: unknown): Promise<AnalyzeResult> {
+  if (!(await esAdmin())) return { ok: false, reason: "FORBIDDEN" };
+  if (!isVisionEnabled()) return { ok: false, reason: "VISION_DISABLED" };
+
+  const parsed = fotosSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, reason: "INVALID_INPUT", detail: parsed.error.issues[0]?.message };
+  }
+
+  const supabase = await createClient();
+  const cartas = [];
+
+  for (const ruta of parsed.data.storagePaths) {
+    const { data, error } = await supabase.storage.from("docs").download(ruta);
+    if (error || !data) return { ok: false, reason: "UNREADABLE", detail: "No se pudo abrir la foto." };
+
+    try {
+      cartas.push(
+        ...(await extractCardsFromImage(await data.arrayBuffer(), "image/webp", parsed.data.mode)),
+      );
+    } catch (error) {
+      if (error instanceof VisionError) {
+        return { ok: false, reason: `VISION_${error.code}`, detail: error.message };
+      }
+      return { ok: false, reason: "VISION_API_ERROR" };
+    }
+  }
+
+  if (cartas.length === 0) {
+    return { ok: false, reason: "VISION_UNREADABLE", detail: "No se reconoció ninguna carta." };
+  }
+
+  const filas = buildPhotoSheet(cartas, parsed.data.lote);
+  const hoja = XLSX.utils.aoa_to_sheet([[...PHOTO_SHEET_HEADERS], ...filas]);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, "Fotos");
+  const bytes = XLSX.write(libro, { type: "buffer", bookType: "xlsx" }) as Buffer;
+
+  const storagePath = `imports/${crypto.randomUUID()}-fotos.xlsx`;
+  const { error: subida } = await supabase.storage
+    .from("docs")
+    .upload(storagePath, new Blob([new Uint8Array(bytes)]), {
+      contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      upsert: false,
+    });
+
+  if (subida) return { ok: false, reason: "UPLOAD_FAILED", detail: subida.message };
 
   return analyzeImportFile({ storagePath });
 }

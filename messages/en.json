@@ -531,7 +531,33 @@
         "TOO_LARGE": "The sheet is larger than 8 MB.",
         "TIMEOUT": "Google did not answer in time. Try again.",
         "UNREACHABLE": "The sheet could not be fetched.",
-        "UPLOAD_FAILED": "The sheet was fetched but could not be stored."
+        "UPLOAD_FAILED": "The sheet was fetched but could not be stored.",
+        "VISION_DISABLED": "Photo import needs ANTHROPIC_API_KEY on the server.",
+        "VISION_REFUSED": "The model could not process that image.",
+        "VISION_UNREADABLE": "No card was recognized in the photo. Try more light or get closer.",
+        "VISION_API_ERROR": "Reading the photo failed."
+      },
+      "photo": {
+        "open": "Import from a photo",
+        "title": "Import from a photo",
+        "hint": "The label gives the card data. Platform, date and lot costs are yours to type: no photo knows them.",
+        "disabled": "Requires ANTHROPIC_API_KEY on the server. The rest of the importer works the same.",
+        "platform": "Platform",
+        "purchasedAt": "Purchase date",
+        "reference": "Reference (optional)",
+        "shipping": "Lot shipping (optional)",
+        "premium": "Buyer premium (optional)",
+        "received": "Already arrived",
+        "modeSlab": "Slab photos",
+        "modeList": "Photo of a list",
+        "takePhoto": "Take photo",
+        "pickPhoto": "Choose image",
+        "read": "{n, plural, =0 {Read} one {Read # photo} other {Read # photos}}",
+        "sheetName": "Photos",
+        "alwaysReviewed": "Whatever is read goes through the preview before anything is created. Nothing enters inventory unseen.",
+        "forbidden": "Your role cannot upload photos to the importer.",
+        "badImage": "That image could not be prepared.",
+        "uploadFailed": "The photo could not be uploaded."
       }
     },
     "accounts": {

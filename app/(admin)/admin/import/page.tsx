@@ -7,6 +7,7 @@ import { RevertButton } from "@/components/import/revert-button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDateOnly } from "@/lib/inventory/format";
+import { isVisionEnabled } from "@/lib/ai/vision";
 import { createClient } from "@/lib/supabase/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -63,7 +64,7 @@ export default async function ImportPage() {
         <p className="text-muted-foreground text-sm">{t("description")}</p>
       </header>
 
-      <ImportWizard />
+      <ImportWizard visionEnabled={isVisionEnabled()} />
 
       {lotes !== null && lotes.length > 0 && (
         <section className="space-y-3">
